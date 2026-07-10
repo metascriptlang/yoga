@@ -2,7 +2,7 @@
 //
 // See CLAUDE.md for architecture. Layered:
 //   - enums.ms   — string-literal unions + toC mapping for C-API enums
-//   - yogaH.ms   — extern function declarations against deps/yoga/yoga/*.h
+//   - yogaH.ms   — C-API re-exported from deps/yoga/yoga/Yoga.h (import-from-.h)
 //   - node.ms    — YogaNode wrapper tree around YGNodeRef (+ sync protocol opt-in)
 //   - style.ms   — FlexStyle interface + applyStyle
 //   - layout.ms  — calculateLayout + LayoutResult read-back
