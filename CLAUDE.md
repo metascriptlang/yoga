@@ -96,14 +96,9 @@ Neon never imports this package: the reconciler only does `setAttr("style", ...)
 - **Build from repo root.** `@passC("-Ideps/yoga")` resolves against the build CWD (`@link` paths resolve against the source file, so they survive cross-repo imports). A consumer repo (e.g. Void) importing `src/index.ms` by relative path must make `deps/yoga` resolvable from its own root — symlink `ln -s ../yoga/deps/yoga deps/yoga`. Candidate msc fix: make `@passC` source-relative like `@link`.
 - **Detached yoga nodes leak.** `freeLayoutTree` frees the ROOT island only (`YGNodeFreeRecursive`); a node whose yg was detached during a sync rebuild (removed from tree / layoutStyle→null between passes) is orphaned — ~19KB across the Void test suite, pre-existing since the pre-DRY version. Candidate fix: free the yg in `syncLayoutNode`'s rebuild path when a child leaves the island.
 
-## Co-Evolution Policy
+## Compiler boundary
 
-When hitting a MetaScript or runtime limitation:
-1. Stop Yoga work
-2. Fix in `~/metascript/recompiler` (compiler) or runtime
-3. Return to Yoga with proper support
-
-Never workaround compiler issues — we own the whole stack.
+A MetaScript or runtime limitation follows the workspace compiler boundary (`~/metascript/CLAUDE.md`): repro, card, park, move on.
 
 ## References
 
