@@ -6,6 +6,7 @@
 #   scripts/build-yoga.sh ios          # → deps/yoga/build/ios/libyoga.a
 #   scripts/build-yoga.sh ios-sim      # → deps/yoga/build/ios-sim/libyoga.a
 #   scripts/build-yoga.sh emscripten   # → deps/yoga/build/emscripten/libyoga.a
+#   scripts/build-yoga.sh windows      # → deps/yoga/build/windows/libyoga.a
 #
 # Source list is one Yoga tree: deps/yoga/yoga/{*.cpp, */*.cpp}.
 # 19 .cpp files total — ~1s compile time per platform.
@@ -46,8 +47,14 @@ case "$PLATFORM" in
 		CXX="em++"
 		CXXFLAGS="-std=c++20 -O2 -I$YOGA_SRC"
 		;;
+	windows)
+		# msc links Windows builds with zig cc for x86_64-windows-gnu; match its ABI.
+		# ZIG defaults to the zig that ships with msc.
+		CXX="${ZIG:-$HOME/.metascript/zig/zig.exe} c++"
+		CXXFLAGS="-target x86_64-windows-gnu -std=c++20 -O2 -I$YOGA_SRC"
+		;;
 	*)
-		echo "unknown platform: $PLATFORM (expected: macos | ios | ios-sim | emscripten)"
+		echo "unknown platform: $PLATFORM (expected: macos | ios | ios-sim | emscripten | windows)"
 		exit 1
 		;;
 esac

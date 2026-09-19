@@ -6,19 +6,23 @@
 // YGValue-returning style getters are intentionally unbound — struct-by-value
 // FFI is untested and the wrapper API only needs setters + float layout reads.
 //
-// Build convention (matches void): compile from the repo root so the -I path
-// resolves; @link paths resolve relative to this source file.
+// Build convention (matches void): the -I and @link paths resolve relative to
+// this source file, so importers in other repos (void, neon) find them.
 
-@passC("-Ideps/yoga");
+@passC("-I../deps/yoga");
 @include("yoga/Yoga.h");
 @passL("-lc++");
 
-@platform("macos") {
+when (macos) {
 	@link("../deps/yoga/build/macos/libyoga.a");
 }
 
-@platform("ios") {
+when (ios) {
 	@link("../deps/yoga/build/ios/libyoga.a");
+}
+
+when (windows) {
+	@link("../deps/yoga/build/windows/libyoga.a");
 }
 
 // ===== Node lifecycle =====
