@@ -93,12 +93,14 @@ Neon never imports this package: the reconciler only does `setAttr("style", ...)
 - **`import-from-.h` not used.** msc's `.h` parser is C-only and doesn't follow `#include`. Use `extern function + @include` pattern (proven in void2d `gpu.ms`).
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **No percent/auto dimensions yet.** FlexStyle fields are `float32 | null` (points only). `"50%"`/`"auto"` needs `float32 | string | null` fields — planned after the points-only surface is proven on Void.
-- **Build from repo root.** `@passC("-Ideps/yoga")` resolves against the build CWD (`@link` paths resolve against the source file, so they survive cross-repo imports). A consumer repo (e.g. Void) importing `src/index.ms` by relative path must make `deps/yoga` resolvable from its own root — symlink `ln -s ../yoga/deps/yoga deps/yoga`. Candidate msc fix: make `@passC` source-relative like `@link`.
+- **A consumer needs `deps/yoga`.** `@passC` and `@link` both resolve a relative path against the directory of the module that declares them (the old CWD-relative `@passC` behaviour is gone; measured 2026-09-20 on `msc` build `94c23bfd`). A consumer repo importing `src/index.ms` by relative path still needs the vendored tree reachable at its own `deps/yoga` — symlink `ln -s ../yoga/deps/yoga deps/yoga`.
 - **Detached yoga nodes leak.** `freeLayoutTree` frees the ROOT island only (`YGNodeFreeRecursive`); a node whose yg was detached during a sync rebuild (removed from tree / layoutStyle→null between passes) is orphaned — ~19KB across the Void test suite, pre-existing since the pre-DRY version. Candidate fix: free the yg in `syncLayoutNode`'s rebuild path when a child leaves the island.
 
-## Compiler boundary
+## Git and the gate
 
-A MetaScript or runtime limitation follows the workspace compiler boundary (`~/metascript/CLAUDE.md`): repro, card, park, move on.
+Yoga follows the arc model of `~/.claude/CLAUDE.md` and lands with the plain-git recipe of `~/metascript/CLAUDE.md` §Arcs. A MetaScript or runtime limitation follows the workspace compiler boundary: repro, card in `~/metascript/.inbox/compiler/`, park, move on. A session started here reads `~/metascript/.inbox/yoga/` first.
+
+The gate is `sh scripts/test.sh`, read by its exit code (green 2026-09-20 on `msc` build `94c23bfd`: `yoga-layout PASS (34 checks)`). A change to `src/sync.ms` or to the seven layout extensions also runs void's consumer of the pass, `msc test tests/layout.test.ms` in `~/metascript/void` — that entry is red today for a compiler reason, card `2026-09-20-typeinfo-demanded-but-reachability-marked-it-dead`.
 
 ## References
 
