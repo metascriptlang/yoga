@@ -3,8 +3,6 @@
 #
 # Usage:
 #   scripts/build-yoga.sh macos        # → deps/yoga/build/macos/libyoga.a
-#   scripts/build-yoga.sh ios          # → deps/yoga/build/ios/libyoga.a
-#   scripts/build-yoga.sh ios-sim      # → deps/yoga/build/ios-sim/libyoga.a
 #   scripts/build-yoga.sh emscripten   # → deps/yoga/build/emscripten/libyoga.a
 #   scripts/build-yoga.sh windows      # → deps/yoga/build/windows/libyoga.a
 #
@@ -22,7 +20,6 @@ OBJ_DIR="$OUT_DIR/obj"
 
 mkdir -p "$OBJ_DIR"
 
-# Assemble source list once (same on every platform).
 SOURCES=""
 for f in "$SRC_DIR"/*.cpp "$SRC_DIR"/algorithm/*.cpp "$SRC_DIR"/config/*.cpp \
 		 "$SRC_DIR"/debug/*.cpp "$SRC_DIR"/event/*.cpp "$SRC_DIR"/node/*.cpp; do
@@ -33,14 +30,6 @@ case "$PLATFORM" in
 	macos)
 		CXX="clang++"
 		CXXFLAGS="-std=c++20 -O2 -arch arm64 -arch x86_64 -I$YOGA_SRC"
-		;;
-	ios)
-		CXX="clang++"
-		CXXFLAGS="-std=c++20 -O2 -target arm64-apple-ios -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -I$YOGA_SRC"
-		;;
-	ios-sim)
-		CXX="clang++"
-		CXXFLAGS="-std=c++20 -O2 -target arm64-apple-ios-simulator -target x86_64-apple-ios-simulator -isysroot $(xcrun --sdk iphonesimulator --show-sdk-path) -I$YOGA_SRC"
 		;;
 	emscripten)
 		# Requires emsdk activated upstream.
@@ -54,7 +43,7 @@ case "$PLATFORM" in
 		CXXFLAGS="-target x86_64-windows-gnu -std=c++20 -O2 -I$YOGA_SRC"
 		;;
 	*)
-		echo "unknown platform: $PLATFORM (expected: macos | ios | ios-sim | emscripten | windows)"
+		echo "unknown platform: $PLATFORM (expected: macos | emscripten | windows)"
 		exit 1
 		;;
 esac
@@ -72,6 +61,7 @@ for src in $SOURCES; do
 done
 
 # Archive.
+rm -f "$OUT_DIR/libyoga.a"
 ar rcs "$OUT_DIR/libyoga.a" "$OBJ_DIR"/*.o "$OBJ_DIR"/*/*.o
 ranlib "$OUT_DIR/libyoga.a" 2>/dev/null || true
 

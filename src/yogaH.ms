@@ -19,7 +19,25 @@ when (macos) {
 }
 
 when (ios) {
-	@link("../deps/yoga/build/ios/libyoga.a");
+	@compile("../deps/yoga/yoga/YGConfig.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGEnums.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGNode.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGNodeLayout.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGNodeStyle.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGPixelGrid.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/YGValue.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/AbsoluteLayout.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/Baseline.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/Cache.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/CalculateLayout.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/FlexLine.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/algorithm/PixelGrid.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/config/Config.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/debug/AssertFatal.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/debug/Log.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/event/event.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/node/LayoutResults.cpp", "-std=c++20");
+	@compile("../deps/yoga/yoga/node/Node.cpp", "-std=c++20");
 }
 
 when (windows) {
