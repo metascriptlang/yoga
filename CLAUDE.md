@@ -98,7 +98,7 @@ Neon never imports this package: the reconciler only does `setAttr("style", ...)
 
 ## Git and the gate
 
-Yoga follows the arc model of `~/.claude/CLAUDE.md` and lands with the plain-git recipe of `~/metascript/CLAUDE.md` §Arcs. A MetaScript or runtime limitation follows the workspace compiler boundary: repro, card in `~/metascript/.inbox/compiler/`, park, move on. A session started here reads `~/metascript/.inbox/yoga/` first.
+Yoga follows the worktree playbook enabled by `~/metascript/CLAUDE.md` and uses `~/nerdtools/claude/tools/wt.sh` with the gate below. The shared session context reads this repo's card and `~/metascript/.inbox/yoga/`. A MetaScript or runtime limitation follows the workspace compiler boundary: repro, card in `~/metascript/.inbox/compiler/`, park, move on.
 
 The gate is `sh scripts/test.sh`, read by its exit code (green 2026-09-20 on `msc` build `94c23bfd`: `yoga-layout PASS (34 checks)`). A change to `src/sync.ms` or to the seven layout extensions also runs void's consumer of the pass, `msc test tests/layout.test.ms` in `~/metascript/void` — that entry is red today for a compiler reason, card `2026-09-20-typeinfo-demanded-but-reachability-marked-it-dead`.
 
