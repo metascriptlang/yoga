@@ -8,6 +8,7 @@ TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/darwin-x86_64"
 CC="$TOOLCHAIN/bin/aarch64-linux-android23-clang"
 NM="$TOOLCHAIN/bin/llvm-nm"
 READELF="$TOOLCHAIN/bin/llvm-readelf"
+CXX_SHARED="$TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
 ADB="$SDK/platform-tools/adb"
 ZIPALIGN="$SDK/build-tools/36.0.0/zipalign"
 GRADLE="${GRADLE:-gradle}"
@@ -17,6 +18,7 @@ RELEASE="$OUT/libyoga_probe_release.so"
 JNI_LIBS="$ROOT/test/android/app/src/main/jniLibs/arm64-v8a"
 APK="$ROOT/test/android/app/build/outputs/apk/debug/app-debug.apk"
 
+rm -rf "$ROOT/test/android/app/src/main/jniLibs"
 mkdir -p "$OUT" "$JNI_LIBS"
 msc build "$ROOT/test/android/layoutProbe.ms" --os=android --cpu=arm64 --app=lib --cc="$CC" --output="$DEBUG" --no-color
 msc build "$ROOT/test/android/layoutProbe.ms" --os=android --cpu=arm64 --app=lib --cc="$CC" --release --strip --output="$RELEASE" --no-color
@@ -44,6 +46,7 @@ if "$READELF" -SW "$RELEASE" | awk '$2 == ".symtab" { found = 1 } END { exit fou
 fi
 
 cp "$DEBUG" "$JNI_LIBS/libyoga_probe.so"
+cp "$CXX_SHARED" "$JNI_LIBS/libc++_shared.so"
 "$GRADLE" -p "$ROOT/test/android" clean assembleDebug --no-daemon
 "$ZIPALIGN" -c -P 16 -v 4 "$APK"
 "$ADB" wait-for-device
