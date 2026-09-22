@@ -37,16 +37,14 @@ See `~/metascript/neon/docs/RENDER-LAYERS.md` for the full 3-layer model.
 
 ## Build
 
-Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). The C++ core compiles to a static lib per platform:
+Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). iOS consumers compile the 19 C++20 translation units declared in `src/yogaH.ms` through ordinary `msc build`; the compiler supplies the active SDK, target, dependency tracking, and native object cache. macOS and Emscripten still consume prebuilt archives:
 
 ```bash
-scripts/build-yoga.sh macos     # → deps/yoga/build/macos/libyoga.a
-scripts/build-yoga.sh ios       # → deps/yoga/build/ios/libyoga.a
-scripts/build-yoga.sh ios-sim   # → deps/yoga/build/ios-sim/libyoga.a
+scripts/build-yoga.sh macos      # → deps/yoga/build/macos/libyoga.a
 scripts/build-yoga.sh emscripten # → deps/yoga/build/emscripten/libyoga.a
 ```
 
-Direct `clang++ -std=c++20` (no cmake) — one source list, one ar invocation.
+The archive script invokes the C++20 compiler directly without cmake.
 
 ## MetaScript Strengths Exploited
 
@@ -89,11 +87,10 @@ Neon never imports this package: the reconciler only does `setAttr("style", ...)
 
 ## Known Limitations
 
-- **Backend is C++.** Yoga 3.x requires C++20. We compile the C++ core into `libyoga.a` via clang++; only the flat C-API is bound to MetaScript.
+- **Backend is C++.** Yoga 3.x requires C++20. On iOS, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS and Emscripten use `libyoga.a`. Only the flat C-API is bound to MetaScript.
 - **`import-from-.h` not used.** msc's `.h` parser is C-only and doesn't follow `#include`. Use `extern function + @include` pattern (proven in void2d `gpu.ms`).
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **No percent/auto dimensions yet.** FlexStyle fields are `float32 | null` (points only). `"50%"`/`"auto"` needs `float32 | string | null` fields — planned after the points-only surface is proven on Void.
-- **A consumer needs `deps/yoga`.** `@passC` and `@link` both resolve a relative path against the directory of the module that declares them (the old CWD-relative `@passC` behaviour is gone; measured 2026-09-20 on `msc` build `94c23bfd`). A consumer repo importing `src/index.ms` by relative path still needs the vendored tree reachable at its own `deps/yoga` — symlink `ln -s ../yoga/deps/yoga deps/yoga`.
 - **Detached yoga nodes leak.** `freeLayoutTree` frees the ROOT island only (`YGNodeFreeRecursive`); a node whose yg was detached during a sync rebuild (removed from tree / layoutStyle→null between passes) is orphaned — ~19KB across the Void test suite, pre-existing since the pre-DRY version. Candidate fix: free the yg in `syncLayoutNode`'s rebuild path when a child leaves the island.
 
 ## Git and the gate
