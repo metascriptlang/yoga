@@ -36,7 +36,7 @@ The generic host protocol is static and cross-module: its host extensions must b
 
 The package vendors Yoga under `deps/yoga/`; consumers do not maintain a second source or linker inventory.
 
-The artifact strategy may differ by target without changing the public layout API. iOS compiles package-owned C++ sources through the declarations in `src/yogaH.ms`, using the active compiler target and SDK context. macOS, Windows, and Emscripten use archives produced by `scripts/build-yoga.sh`. The current target mapping and source inventory live in those files and are not duplicated here.
+The artifact strategy may differ by target without changing the public layout API. iOS and Android compile package-owned C++ sources through the declarations in `src/yogaH.ms`, using the active compiler target and toolchain context. Android packages the NDK's shared C++ runtime beside the msc-built application library; `scripts/test-android.sh` is the executable boundary proof. macOS, Windows, and Emscripten use archives produced by `scripts/build-yoga.sh`. The current target mapping and source inventory live in those files and are not duplicated here.
 
 This boundary gives each fact one owner:
 
@@ -44,7 +44,7 @@ This boundary gives each fact one owner:
 - `msc` knows how native inputs participate in a build and invalidate its caches.
 - The consumer knows only which target it is building.
 
-A standalone MetaScript iOS application therefore needs a valid iOS compiler context, not Ion or Neon and not a separately prepared Yoga archive.
+A standalone MetaScript iOS or Android application therefore needs a valid platform compiler context, not Ion or Neon and not a separately prepared Yoga archive.
 
 ## Rejected boundaries
 

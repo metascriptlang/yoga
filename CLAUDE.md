@@ -8,7 +8,7 @@ Durable package boundaries, integration modes, native dependency ownership, and 
 
 ## Build
 
-Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). iOS consumers compile the package-owned sources declared in `src/yogaH.ms` through ordinary `msc build`; the compiler supplies the active SDK, target, dependency tracking, and native object cache. macOS, Windows, and Emscripten consume prebuilt archives:
+Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). iOS and Android consumers compile the package-owned sources declared in `src/yogaH.ms` through ordinary `msc build`; the compiler supplies the active SDK or NDK target, dependency tracking, and native object cache. macOS, Windows, and Emscripten consume prebuilt archives:
 
 ```bash
 scripts/build-yoga.sh macos      # → deps/yoga/build/macos/libyoga.a
@@ -27,7 +27,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 
 ## Known Limitations
 
-- **Backend is C++.** Yoga 3.x requires C++20. On iOS, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS, Windows, and Emscripten use `libyoga.a`. Only the flat C-API is bound to MetaScript.
+- **Backend is C++.** Yoga 3.x requires C++20. On iOS and Android, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS, Windows, and Emscripten use `libyoga.a`. Only the flat C-API is bound to MetaScript.
 - **`import-from-.h` not used.** msc's `.h` parser is C-only and doesn't follow `#include`. Use `extern function + @include` pattern (proven in void2d `gpu.ms`).
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **No percent/auto dimensions yet.** FlexStyle fields are `float32 | null` (points only). `"50%"`/`"auto"` needs `float32 | string | null` fields — planned after the points-only surface is proven on Void.
