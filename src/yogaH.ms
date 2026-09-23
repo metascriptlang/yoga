@@ -12,7 +12,11 @@
 // this source file, so importers in other repos (void, neon) find them.
 
 @passC("-I../deps/yoga");
-@passL("-lc++");
+when (android) {
+	@passL("-static-libstdc++");
+} else {
+	@passL("-lc++");
+}
 
 when (macos) {
 	@link("../deps/yoga/build/macos/libyoga.a");
