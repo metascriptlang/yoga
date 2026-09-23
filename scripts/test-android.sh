@@ -8,7 +8,6 @@ TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/darwin-x86_64"
 CC="$TOOLCHAIN/bin/aarch64-linux-android23-clang"
 NM="$TOOLCHAIN/bin/llvm-nm"
 READELF="$TOOLCHAIN/bin/llvm-readelf"
-CXX_SHARED="$TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
 ADB="$SDK/platform-tools/adb"
 ZIPALIGN="$SDK/build-tools/36.0.0/zipalign"
 GRADLE="${GRADLE:-gradle}"
@@ -34,6 +33,10 @@ for library in "$DEBUG" "$RELEASE"; do
 			exit 1
 		fi
 	done
+	if "$READELF" -dW "$library" | grep -F '[libc++_shared.so]' >/dev/null; then
+		echo "libc++_shared.so in NEEDED of $library" >&2
+		exit 1
+	fi
 	if ! "$READELF" -lW "$library" | awk '$1 == "LOAD" { count += 1; if ($NF != "0x4000") bad = 1 } END { exit count > 0 && !bad ? 0 : 1 }'; then
 		echo "non-16384-byte PT_LOAD alignment in $library" >&2
 		exit 1
@@ -46,7 +49,6 @@ if "$READELF" -SW "$RELEASE" | awk '$2 == ".symtab" { found = 1 } END { exit fou
 fi
 
 cp "$DEBUG" "$JNI_LIBS/libyoga_probe.so"
-cp "$CXX_SHARED" "$JNI_LIBS/libc++_shared.so"
 "$GRADLE" -p "$ROOT/test/android" clean assembleDebug --no-daemon
 "$ZIPALIGN" -c -P 16 -v 4 "$APK"
 "$ADB" wait-for-device
