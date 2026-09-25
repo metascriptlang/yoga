@@ -22,7 +22,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 
 - **camelCase** for files, vars, functions; **PascalCase** for types. No snake_case (Yoga's `YGNodeStyleSetFlexDirection` is C-API extern only; our public API wraps it as `applyStyle(node, {flexDirection: "column"})`).
 - **Memory**: pair `YGNodeNew`/`YGNodeFreeRecursive` via `freeYogaNode(node)` + `defer`. Wrap in `struct YogaNode` for DRC auto-cleanup where it makes sense.
-- **No `any`**: use `unknown` + narrowing. Opaque pointers are `Ptr<void>`.
+- **No `any`**: use `unknown` + narrowing. A C handle keeps its header type: a node is `Ptr<YGNode>` (`YGNode` imported from `Yoga.h`, exported by `src/index.ms` for hosts), never `Ptr<void>`. msc refuses `Ptr<void>` → `Ptr<T>` by design (Nim: `pointer` into `ptr T`), so a handle stored untyped cannot reach the C API again without a cast.
 - **Layering**: `yogaH.ms` (raw C externs) → `node.ms`/`style.ms`/`layout.ms`/`sync.ms` (typed wrappers + generic pass) → `index.ms` (public API). One-way deps. **Consumers import ONLY `src/index.ms`** — never deep paths (one find/replace when the package loader lands).
 
 ## Known Limitations
