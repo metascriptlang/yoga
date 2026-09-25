@@ -2,7 +2,25 @@
 // Native binary: exits non-zero on any mismatch, prints one PASS marker at
 // the end (build via `msc build test/layout.test.ms` from the repo root).
 
-import { yogaNode, yogaLeaf, freeYogaNode, layoutTree, setStyle, YogaNode, layoutPass, layoutGetChildren, layoutGetStyle, layoutGetLastStyle, layoutSetLastStyle, layoutGetYg, layoutSetYg, layoutSetFrame } from "../src/index";
+import {
+	yogaNode,
+	yogaLeaf,
+	freeYogaNode,
+	layoutTree,
+	setStyle,
+	YogaNode,
+	layoutPass,
+	freeLayoutTree,
+	layoutGetChildren,
+	layoutGetStyle,
+	layoutGetLastStyle,
+	layoutSetLastStyle,
+	layoutGetYg,
+	layoutSetYg,
+	layoutSetFrame,
+	FlexStyle,
+	YGNode,
+} from "../src/index";
 import { exit } from "std/process";
 
 let checks: int32 = 0;
@@ -15,6 +33,14 @@ function expectEq(label: string, actual: float32, expected: float32): void {
 	if (!ok) {
 		failures += 1;
 		console.log("FAIL " + label + ": expected " + expected.toString() + " got " + actual.toString());
+	}
+}
+
+function expectTrue(label: string, ok: boolean): void {
+	checks += 1;
+	if (!ok) {
+		failures += 1;
+		console.log("FAIL " + label);
 	}
 }
 
@@ -107,6 +133,61 @@ function genericLayoutPassOnYogaNode(): void {
 	freeYogaNode(root);
 }
 
+export interface HostBox {
+	flex: FlexStyle | null;
+	lastFlex: FlexStyle | null;
+	yg: Ptr<YGNode> | null;
+	children: HostBox[];
+	x: float32;
+	y: float32;
+	w: float32;
+	h: float32;
+}
+
+export function layoutGetChildren(this n: HostBox): HostBox[] { return n.children; }
+export function layoutGetStyle(this n: HostBox): FlexStyle | null { return n.flex; }
+export function layoutGetLastStyle(this n: HostBox): FlexStyle | null { return n.lastFlex; }
+export function layoutSetLastStyle(this n: HostBox, s: FlexStyle | null): void { n.lastFlex = s; }
+export function layoutGetYg(this n: HostBox): Ptr<YGNode> | null { return n.yg; }
+export function layoutSetYg(this n: HostBox, yg: Ptr<YGNode> | null): void { n.yg = yg; }
+export function layoutSetFrame(
+	this n: HostBox,
+	x: float32,
+	y: float32,
+	w: float32,
+	h: float32,
+): void {
+	n.x = x;
+	n.y = y;
+	n.w = w;
+	n.h = h;
+}
+
+function hostBox(flex: FlexStyle, children: HostBox[]): HostBox {
+	return {
+		flex: flex,
+		lastFlex: null,
+		yg: null,
+		children: children,
+		x: 0.0,
+		y: 0.0,
+		w: 0.0,
+		h: 0.0,
+	};
+}
+
+function genericLayoutPassOnHostTree(): void {
+	const grow = hostBox({ flexGrow: 1.0 }, []);
+	const fixed = hostBox({ height: 50.0 }, []);
+	const root = hostBox({ flexDirection: "column", width: 400.0, height: 300.0 }, [grow, fixed]);
+	layoutPass(root, 400.0, 300.0);
+	expectEq("hostPass a.height", grow.h, 250.0);
+	expectEq("hostPass b.top", fixed.y, 250.0);
+	expectEq("hostPass root.width", root.w, 400.0);
+	freeLayoutTree(root);
+	expectTrue("hostPass freed", root.yg === null && grow.yg === null);
+}
+
 function percentWidthHeight(): void {
 	const root = yogaNode({ flexDirection: "column", width: 400.0, height: 300.0 }, [
 		yogaLeaf({ width: "50%", height: "25%" }),
@@ -188,6 +269,7 @@ function main(): void {
 	nestedRowInColumn();
 	relayoutAfterSetStyle();
 	genericLayoutPassOnYogaNode();
+	genericLayoutPassOnHostTree();
 	percentWidthHeight();
 	autoMarginCenters();
 	flexBasisPercent();
