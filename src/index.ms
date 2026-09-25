@@ -21,4 +21,5 @@ export { YogaNode, LayoutResult, yogaNode, yogaLeaf, appendChild, setStyle, free
 export { FlexStyle, applyStyle } from "./style";
 export { calculateLayout, getLayout, layoutTree } from "./layout";
 export { layoutPass, freeLayoutTree } from "./sync";
+export { YGNode } from "./yogaH";
 export { FlexDirection, Justify, Align, PositionType, Wrap, Overflow, Display, Direction } from "./enums";

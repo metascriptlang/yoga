@@ -7,8 +7,8 @@
 //   export function layoutGetStyle(this n: T): FlexStyle | null
 //   export function layoutGetLastStyle(this n: T): FlexStyle | null
 //   export function layoutSetLastStyle(this n: T, s: FlexStyle | null): void
-//   export function layoutGetYg(this n: T): Ptr<void> | null
-//   export function layoutSetYg(this n: T, yg: Ptr<void> | null): void
+//   export function layoutGetYg(this n: T): Ptr<YGNode> | null
+//   export function layoutSetYg(this n: T, yg: Ptr<YGNode> | null): void
 //   export function layoutSetFrame(this n: T, x: float32, y: float32, w: float32, h: float32): void
 //
 // `export` is required: the monomorphized pass is emitted in THIS module's TU
@@ -24,7 +24,7 @@
 
 import { directionToC } from "./enums";
 import {
-	YGNodeNew, YGNodeFreeRecursive, YGNodeCalculateLayout,
+	YGNode, YGNodeNew, YGNodeFreeRecursive, YGNodeCalculateLayout,
 	YGNodeInsertChild, YGNodeRemoveAllChildren, YGNodeGetChild, YGNodeGetChildCount,
 	YGNodeLayoutGetLeft, YGNodeLayoutGetTop, YGNodeLayoutGetWidth, YGNodeLayoutGetHeight,
 	YGNodeGetHasNewLayout, YGNodeSetHasNewLayout,
@@ -50,7 +50,7 @@ function clearLayoutYg<T>(n: T): void {
 	for (const c of n.layoutGetChildren()) { clearLayoutYg(c); }
 }
 
-function ensureLayoutYg<T>(n: T): Ptr<void> {
+function ensureLayoutYg<T>(n: T): Ptr<YGNode> {
 	const cur = n.layoutGetYg();
 	if (cur !== null) return cur;
 	const fresh = YGNodeNew();
@@ -58,7 +58,7 @@ function ensureLayoutYg<T>(n: T): Ptr<void> {
 	return fresh;
 }
 
-function syncLayoutNode<T>(n: T): Ptr<void> {
+function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 	const yg = ensureLayoutYg(n);
 	const style = n.layoutGetStyle();
 	if (style !== null && n.layoutGetLastStyle() !== style) {

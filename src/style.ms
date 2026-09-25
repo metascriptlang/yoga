@@ -14,7 +14,7 @@ import {
 	gutterColumn, gutterRow, gutterAll,
 } from "./enums";
 import {
-	YGNodeStyleSetDirection, YGNodeStyleSetFlexDirection, YGNodeStyleSetJustifyContent,
+	YGNode, YGNodeStyleSetDirection, YGNodeStyleSetFlexDirection, YGNodeStyleSetJustifyContent,
 	YGNodeStyleSetAlignContent, YGNodeStyleSetAlignItems, YGNodeStyleSetAlignSelf,
 	YGNodeStyleSetPositionType, YGNodeStyleSetFlexWrap, YGNodeStyleSetOverflow, YGNodeStyleSetDisplay,
 	YGNodeStyleSetFlex, YGNodeStyleSetFlexGrow, YGNodeStyleSetFlexShrink,
@@ -96,25 +96,25 @@ function pctValue(v: string): float32 {
 	return v.slice(0, v.length - 1).parseFloat() as float32;
 }
 
-function setWidthStr(yg: Ptr<void>, v: string): void {
+function setWidthStr(yg: Ptr<YGNode>, v: string): void {
 	if (v === "auto") { YGNodeStyleSetWidthAuto(yg); return; }
 	if (isPct(v)) { YGNodeStyleSetWidthPercent(yg, pctValue(v)); return; }
 	YGNodeStyleSetWidth(yg, v.parseFloat() as float32);
 }
 
-function setHeightStr(yg: Ptr<void>, v: string): void {
+function setHeightStr(yg: Ptr<YGNode>, v: string): void {
 	if (v === "auto") { YGNodeStyleSetHeightAuto(yg); return; }
 	if (isPct(v)) { YGNodeStyleSetHeightPercent(yg, pctValue(v)); return; }
 	YGNodeStyleSetHeight(yg, v.parseFloat() as float32);
 }
 
-function setFlexBasisStr(yg: Ptr<void>, v: string): void {
+function setFlexBasisStr(yg: Ptr<YGNode>, v: string): void {
 	if (v === "auto") { YGNodeStyleSetFlexBasisAuto(yg); return; }
 	if (isPct(v)) { YGNodeStyleSetFlexBasisPercent(yg, pctValue(v)); return; }
 	YGNodeStyleSetFlexBasis(yg, v.parseFloat() as float32);
 }
 
-function setMinMaxStr(yg: Ptr<void>, which: int32, v: string): void {
+function setMinMaxStr(yg: Ptr<YGNode>, which: int32, v: string): void {
 	if (v === "auto") return;
 	const pct = isPct(v);
 	const f = pct ? pctValue(v) : (v.parseFloat() as float32);
@@ -124,31 +124,31 @@ function setMinMaxStr(yg: Ptr<void>, which: int32, v: string): void {
 	else { if (pct) YGNodeStyleSetMaxHeightPercent(yg, f); else YGNodeStyleSetMaxHeight(yg, f); }
 }
 
-function setMarginStr(yg: Ptr<void>, edge: int32, v: string): void {
+function setMarginStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
 	if (v === "auto") { YGNodeStyleSetMarginAuto(yg, edge); return; }
 	if (isPct(v)) { YGNodeStyleSetMarginPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetMargin(yg, edge, v.parseFloat() as float32);
 }
 
-function setPaddingStr(yg: Ptr<void>, edge: int32, v: string): void {
+function setPaddingStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetPaddingPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetPadding(yg, edge, v.parseFloat() as float32);
 }
 
-function setPosStr(yg: Ptr<void>, edge: int32, v: string): void {
+function setPosStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetPositionPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetPosition(yg, edge, v.parseFloat() as float32);
 }
 
-function setGapStr(yg: Ptr<void>, gutter: int32, v: string): void {
+function setGapStr(yg: Ptr<YGNode>, gutter: int32, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetGapPercent(yg, gutter, pctValue(v)); return; }
 	YGNodeStyleSetGap(yg, gutter, v.parseFloat() as float32);
 }
 
-export function applyStyle(yg: Ptr<void>, s: FlexStyle): void {
+export function applyStyle(yg: Ptr<YGNode>, s: FlexStyle): void {
 	if (s.direction !== null) YGNodeStyleSetDirection(yg, directionToC(s.direction));
 	if (s.flexDirection !== null) YGNodeStyleSetFlexDirection(yg, flexDirectionToC(s.flexDirection));
 	if (s.justifyContent !== null) YGNodeStyleSetJustifyContent(yg, justifyToC(s.justifyContent));

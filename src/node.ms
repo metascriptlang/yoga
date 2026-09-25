@@ -3,7 +3,13 @@
 // yoga side (YGNodeFreeRecursive frees the whole yoga subtree, so call it
 // on the root only).
 
-import { YGNodeNew, YGNodeFreeRecursive, YGNodeInsertChild, YGNodeGetChildCount } from "./yogaH";
+import {
+	YGNode,
+	YGNodeNew,
+	YGNodeFreeRecursive,
+	YGNodeInsertChild,
+	YGNodeGetChildCount,
+} from "./yogaH";
 import { FlexStyle, applyStyle } from "./style";
 
 export interface LayoutResult {
@@ -14,7 +20,7 @@ export interface LayoutResult {
 }
 
 export interface YogaNode {
-	yg: Ptr<void>;
+	yg: Ptr<YGNode>;
 	style: FlexStyle;
 	children: YogaNode[];
 	layout: LayoutResult;
@@ -61,8 +67,8 @@ export function layoutGetChildren(this n: YogaNode): YogaNode[] { return n.child
 export function layoutGetStyle(this n: YogaNode): FlexStyle | null { return n.style; }
 export function layoutGetLastStyle(this n: YogaNode): FlexStyle | null { return n.style; }
 export function layoutSetLastStyle(this n: YogaNode, s: FlexStyle | null): void {}
-export function layoutGetYg(this n: YogaNode): Ptr<void> | null { return n.yg; }
-export function layoutSetYg(this n: YogaNode, yg: Ptr<void> | null): void {}
+export function layoutGetYg(this n: YogaNode): Ptr<YGNode> | null { return n.yg; }
+export function layoutSetYg(this n: YogaNode, yg: Ptr<YGNode> | null): void {}
 export function layoutSetFrame(this n: YogaNode, x: float32, y: float32, w: float32, h: float32): void {
 	n.layout.left = x;
 	n.layout.top = y;

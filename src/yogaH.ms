@@ -4,7 +4,7 @@
 //
 // Signatures come from deps/yoga/yoga/*.h via import-from-.h — nothing is
 // hand-transcribed, so the binding cannot drift from the vendored header.
-// YGNodeRef crosses as Ptr<void>-compatible; enums cross as int32 (see
+// YGNodeRef crosses as Ptr<YGNode>; enums cross as int32 (see
 // enums.ms for ordinals); YGValue-returning getters stay unbound (wrappers
 // only need setters + float layout reads).
 //
@@ -49,7 +49,7 @@ when (windows) {
 }
 
 export {
-	YGNodeNew, YGNodeFree, YGNodeFreeRecursive, YGNodeReset, YGNodeIsDirty, YGNodeMarkDirty,
+	YGNode, YGNodeNew, YGNodeFree, YGNodeFreeRecursive, YGNodeReset, YGNodeIsDirty, YGNodeMarkDirty,
 	YGNodeGetHasNewLayout, YGNodeSetHasNewLayout, YGNodeInsertChild, YGNodeSwapChild, YGNodeRemoveChild, YGNodeRemoveAllChildren,
 	YGNodeGetChild, YGNodeGetChildCount, YGNodeGetParent, YGNodeCalculateLayout, YGNodeLayoutGetLeft, YGNodeLayoutGetTop,
 	YGNodeLayoutGetRight, YGNodeLayoutGetBottom, YGNodeLayoutGetWidth, YGNodeLayoutGetHeight, YGNodeLayoutGetHadOverflow, YGNodeLayoutGetMargin,
