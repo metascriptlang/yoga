@@ -31,6 +31,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 - **`import-from-.h` not used.** msc's `.h` parser is C-only and doesn't follow `#include`. Use `extern function + @include` pattern (proven in void2d `gpu.ms`).
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **No percent/auto dimensions yet.** FlexStyle fields are `float32 | null` (points only). `"50%"`/`"auto"` needs `float32 | string | null` fields — planned after the points-only surface is proven on Void.
+- **Receiver form on `Ptr<YGNode>`.** `CODE-STYLE.md` §5 wants `yg.applyStyle(s)`, but msc does not resolve an extension whose receiver is `Ptr<T>` (card `~/metascript/.inbox/compiler/2026-09-22-method-call-is-not-an-ordinary-call.md`). `applyStyle` and the `set*` helpers in `src/style.ms` stay free functions until it lands.
 
 ## Git and the gate
 
