@@ -354,6 +354,19 @@ function minMaxHeightStrings(): void {
 	freeYogaNode(root);
 }
 
+function positionAndGapStrings(): void {
+	const root = yogaNode({ flexDirection: "row", width: 200.0, height: 100.0, columnGap: "10" }, [
+		yogaLeaf({ width: 50.0 }),
+		yogaLeaf({ width: 50.0 }),
+		yogaLeaf({ position: "absolute", left: "10%", top: "20%", width: 10.0, height: 10.0 }),
+	]);
+	layoutTree(root, 200.0, 100.0);
+	expectEq("gapStr b.left", root.children[1].layout.left, 60.0);
+	expectEq("posPct c.left", root.children[2].layout.left, 20.0);
+	expectEq("posPct c.top", root.children[2].layout.top, 20.0);
+	freeYogaNode(root);
+}
+
 function numericStringIsPoints(): void {
 	const root = yogaNode({ flexDirection: "row", width: 300.0, height: 50.0 }, [
 		yogaLeaf({ width: "120" }),
@@ -407,6 +420,7 @@ function main(): void {
 	flexBasisPercent();
 	minMaxPercentClamp();
 	minMaxHeightStrings();
+	positionAndGapStrings();
 	numericStringIsPoints();
 	percentEdges();
 	relayoutToPercent();
