@@ -5,7 +5,7 @@
 //   - yogaH.ms   — C-API re-exported from deps/yoga/yoga/Yoga.h (import-from-.h)
 //   - node.ms    — YogaNode wrapper tree around YGNodeRef (+ sync protocol opt-in)
 //   - style.ms   — FlexStyle interface + applyStyle
-//   - layout.ms  — calculateLayout + LayoutResult read-back
+//   - layout.ms  — calculateLayout / layoutTree: layoutPass on a YogaNode tree
 //   - sync.ms    — generic layoutPass<T> over any host tree (convention
 //                  protocol: 7 exported `layout*` extensions on T)
 //

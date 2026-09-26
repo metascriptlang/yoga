@@ -22,7 +22,7 @@
 // between two islands within one frame can trip yoga's single-owner assert —
 // detach via freeLayoutTree first.
 
-import { directionToC } from "./enums";
+import { Direction, directionToC } from "./enums";
 import {
 	YGNode, YGNodeNew, YGNodeFreeRecursive, YGNodeCalculateLayout,
 	YGNodeInsertChild, YGNodeRemoveAllChildren, YGNodeGetChild, YGNodeGetChildCount,
@@ -31,10 +31,15 @@ import {
 } from "./yogaH";
 import { applyStyle } from "./style";
 
-export function layoutPass<T>(root: T, availableWidth: float32, availableHeight: float32): void {
+export function layoutPass<T>(
+	root: T,
+	availableWidth: float32,
+	availableHeight: float32,
+	direction: Direction = "ltr",
+): void {
 	if (root.layoutGetStyle() === null) return;
 	const yg = syncLayoutNode(root);
-	YGNodeCalculateLayout(yg, availableWidth, availableHeight, directionToC("ltr"));
+	YGNodeCalculateLayout(yg, availableWidth, availableHeight, directionToC(direction));
 	copyBackLayout(root);
 }
 
