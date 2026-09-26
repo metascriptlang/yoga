@@ -29,10 +29,8 @@ export interface YogaNode {
 export function yogaNode(style: FlexStyle, children: YogaNode[]): YogaNode {
 	const yg = YGNodeNew();
 	applyStyle(yg, style);
-	let i: int32 = 0;
-	while (i < children.length) {
+	for (let i: int32 = 0; i < children.length; i++) {
 		YGNodeInsertChild(yg, children[i].yg, i);
-		i += 1;
 	}
 	return {
 		yg: yg,
@@ -47,17 +45,17 @@ export function yogaLeaf(style: FlexStyle): YogaNode {
 	return yogaNode(style, empty);
 }
 
-export function appendChild(parent: YogaNode, child: YogaNode): void {
+export function appendChild(this parent: YogaNode, child: YogaNode): void {
 	YGNodeInsertChild(parent.yg, child.yg, YGNodeGetChildCount(parent.yg));
 	parent.children.push(child);
 }
 
-export function setStyle(node: YogaNode, style: FlexStyle): void {
+export function setStyle(this node: YogaNode, style: FlexStyle): void {
 	node.style = style;
 	applyStyle(node.yg, style);
 }
 
-export function freeYogaNode(root: YogaNode): void {
+export function freeYogaNode(this root: YogaNode): void {
 	YGNodeFreeRecursive(root.yg);
 }
 
