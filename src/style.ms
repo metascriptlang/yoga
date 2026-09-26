@@ -10,11 +10,9 @@
 import {
 	FlexDirection, Justify, Align, PositionType, Wrap, Overflow, Display, Direction,
 	flexDirectionToC, justifyToC, alignToC, positionTypeToC, wrapToC, overflowToC, displayToC, directionToC,
-	edgeLeft, edgeTop, edgeRight, edgeBottom, edgeHorizontal, edgeVertical, edgeAll,
-	gutterColumn, gutterRow, gutterAll,
 } from "./enums";
 import {
-	YGNode, YGNodeStyleSetDirection, YGNodeStyleSetFlexDirection, YGNodeStyleSetJustifyContent,
+	YGNode, YGEdge, YGGutter, YGNodeStyleSetDirection, YGNodeStyleSetFlexDirection, YGNodeStyleSetJustifyContent,
 	YGNodeStyleSetAlignContent, YGNodeStyleSetAlignItems, YGNodeStyleSetAlignSelf,
 	YGNodeStyleSetPositionType, YGNodeStyleSetFlexWrap, YGNodeStyleSetOverflow, YGNodeStyleSetDisplay,
 	YGNodeStyleSetFlex, YGNodeStyleSetFlexGrow, YGNodeStyleSetFlexShrink,
@@ -114,35 +112,56 @@ function setFlexBasisStr(yg: Ptr<YGNode>, v: string): void {
 	YGNodeStyleSetFlexBasis(yg, v.parseFloat() as float32);
 }
 
-function setMinMaxStr(yg: Ptr<YGNode>, which: int32, v: string): void {
-	if (v === "auto") return;
-	const pct = isPct(v);
-	const f = pct ? pctValue(v) : (v.parseFloat() as float32);
-	if (which === 0) { if (pct) YGNodeStyleSetMinWidthPercent(yg, f); else YGNodeStyleSetMinWidth(yg, f); }
-	else if (which === 1) { if (pct) YGNodeStyleSetMinHeightPercent(yg, f); else YGNodeStyleSetMinHeight(yg, f); }
-	else if (which === 2) { if (pct) YGNodeStyleSetMaxWidthPercent(yg, f); else YGNodeStyleSetMaxWidth(yg, f); }
-	else { if (pct) YGNodeStyleSetMaxHeightPercent(yg, f); else YGNodeStyleSetMaxHeight(yg, f); }
+enum MinMax {
+	MinWidth,
+	MinHeight,
+	MaxWidth,
+	MaxHeight,
 }
 
-function setMarginStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
+function setMinMaxPoints(yg: Ptr<YGNode>, which: MinMax, f: float32): void {
+	match (which) {
+		MinMax.MinWidth => YGNodeStyleSetMinWidth(yg, f),
+		MinMax.MinHeight => YGNodeStyleSetMinHeight(yg, f),
+		MinMax.MaxWidth => YGNodeStyleSetMaxWidth(yg, f),
+		MinMax.MaxHeight => YGNodeStyleSetMaxHeight(yg, f),
+	}
+}
+
+function setMinMaxPercent(yg: Ptr<YGNode>, which: MinMax, f: float32): void {
+	match (which) {
+		MinMax.MinWidth => YGNodeStyleSetMinWidthPercent(yg, f),
+		MinMax.MinHeight => YGNodeStyleSetMinHeightPercent(yg, f),
+		MinMax.MaxWidth => YGNodeStyleSetMaxWidthPercent(yg, f),
+		MinMax.MaxHeight => YGNodeStyleSetMaxHeightPercent(yg, f),
+	}
+}
+
+function setMinMaxStr(yg: Ptr<YGNode>, which: MinMax, v: string): void {
+	if (v === "auto") return;
+	if (isPct(v)) { setMinMaxPercent(yg, which, pctValue(v)); return; }
+	setMinMaxPoints(yg, which, v.parseFloat() as float32);
+}
+
+function setMarginStr(yg: Ptr<YGNode>, edge: YGEdge, v: string): void {
 	if (v === "auto") { YGNodeStyleSetMarginAuto(yg, edge); return; }
 	if (isPct(v)) { YGNodeStyleSetMarginPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetMargin(yg, edge, v.parseFloat() as float32);
 }
 
-function setPaddingStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
+function setPaddingStr(yg: Ptr<YGNode>, edge: YGEdge, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetPaddingPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetPadding(yg, edge, v.parseFloat() as float32);
 }
 
-function setPosStr(yg: Ptr<YGNode>, edge: int32, v: string): void {
+function setPosStr(yg: Ptr<YGNode>, edge: YGEdge, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetPositionPercent(yg, edge, pctValue(v)); return; }
 	YGNodeStyleSetPosition(yg, edge, v.parseFloat() as float32);
 }
 
-function setGapStr(yg: Ptr<YGNode>, gutter: int32, v: string): void {
+function setGapStr(yg: Ptr<YGNode>, gutter: YGGutter, v: string): void {
 	if (v === "auto") return;
 	if (isPct(v)) { YGNodeStyleSetGapPercent(yg, gutter, pctValue(v)); return; }
 	YGNodeStyleSetGap(yg, gutter, v.parseFloat() as float32);
@@ -177,110 +196,110 @@ export function applyStyle(yg: Ptr<YGNode>, s: FlexStyle): void {
 		else YGNodeStyleSetHeight(yg, s.height as float32);
 	}
 	if (s.minWidth !== null) {
-		if (typeof s.minWidth === "string") setMinMaxStr(yg, 0, s.minWidth as string);
+		if (typeof s.minWidth === "string") setMinMaxStr(yg, MinMax.MinWidth, s.minWidth as string);
 		else YGNodeStyleSetMinWidth(yg, s.minWidth as float32);
 	}
 	if (s.minHeight !== null) {
-		if (typeof s.minHeight === "string") setMinMaxStr(yg, 1, s.minHeight as string);
+		if (typeof s.minHeight === "string") setMinMaxStr(yg, MinMax.MinHeight, s.minHeight as string);
 		else YGNodeStyleSetMinHeight(yg, s.minHeight as float32);
 	}
 	if (s.maxWidth !== null) {
-		if (typeof s.maxWidth === "string") setMinMaxStr(yg, 2, s.maxWidth as string);
+		if (typeof s.maxWidth === "string") setMinMaxStr(yg, MinMax.MaxWidth, s.maxWidth as string);
 		else YGNodeStyleSetMaxWidth(yg, s.maxWidth as float32);
 	}
 	if (s.maxHeight !== null) {
-		if (typeof s.maxHeight === "string") setMinMaxStr(yg, 3, s.maxHeight as string);
+		if (typeof s.maxHeight === "string") setMinMaxStr(yg, MinMax.MaxHeight, s.maxHeight as string);
 		else YGNodeStyleSetMaxHeight(yg, s.maxHeight as float32);
 	}
 	if (s.aspectRatio !== null) YGNodeStyleSetAspectRatio(yg, s.aspectRatio);
 
 	if (s.margin !== null) {
-		if (typeof s.margin === "string") setMarginStr(yg, edgeAll, s.margin as string);
-		else YGNodeStyleSetMargin(yg, edgeAll, s.margin as float32);
+		if (typeof s.margin === "string") setMarginStr(yg, YGEdge.YGEdgeAll, s.margin as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeAll, s.margin as float32);
 	}
 	if (s.marginHorizontal !== null) {
-		if (typeof s.marginHorizontal === "string") setMarginStr(yg, edgeHorizontal, s.marginHorizontal as string);
-		else YGNodeStyleSetMargin(yg, edgeHorizontal, s.marginHorizontal as float32);
+		if (typeof s.marginHorizontal === "string") setMarginStr(yg, YGEdge.YGEdgeHorizontal, s.marginHorizontal as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeHorizontal, s.marginHorizontal as float32);
 	}
 	if (s.marginVertical !== null) {
-		if (typeof s.marginVertical === "string") setMarginStr(yg, edgeVertical, s.marginVertical as string);
-		else YGNodeStyleSetMargin(yg, edgeVertical, s.marginVertical as float32);
+		if (typeof s.marginVertical === "string") setMarginStr(yg, YGEdge.YGEdgeVertical, s.marginVertical as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeVertical, s.marginVertical as float32);
 	}
 	if (s.marginTop !== null) {
-		if (typeof s.marginTop === "string") setMarginStr(yg, edgeTop, s.marginTop as string);
-		else YGNodeStyleSetMargin(yg, edgeTop, s.marginTop as float32);
+		if (typeof s.marginTop === "string") setMarginStr(yg, YGEdge.YGEdgeTop, s.marginTop as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeTop, s.marginTop as float32);
 	}
 	if (s.marginBottom !== null) {
-		if (typeof s.marginBottom === "string") setMarginStr(yg, edgeBottom, s.marginBottom as string);
-		else YGNodeStyleSetMargin(yg, edgeBottom, s.marginBottom as float32);
+		if (typeof s.marginBottom === "string") setMarginStr(yg, YGEdge.YGEdgeBottom, s.marginBottom as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeBottom, s.marginBottom as float32);
 	}
 	if (s.marginLeft !== null) {
-		if (typeof s.marginLeft === "string") setMarginStr(yg, edgeLeft, s.marginLeft as string);
-		else YGNodeStyleSetMargin(yg, edgeLeft, s.marginLeft as float32);
+		if (typeof s.marginLeft === "string") setMarginStr(yg, YGEdge.YGEdgeLeft, s.marginLeft as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeLeft, s.marginLeft as float32);
 	}
 	if (s.marginRight !== null) {
-		if (typeof s.marginRight === "string") setMarginStr(yg, edgeRight, s.marginRight as string);
-		else YGNodeStyleSetMargin(yg, edgeRight, s.marginRight as float32);
+		if (typeof s.marginRight === "string") setMarginStr(yg, YGEdge.YGEdgeRight, s.marginRight as string);
+		else YGNodeStyleSetMargin(yg, YGEdge.YGEdgeRight, s.marginRight as float32);
 	}
 
 	if (s.padding !== null) {
-		if (typeof s.padding === "string") setPaddingStr(yg, edgeAll, s.padding as string);
-		else YGNodeStyleSetPadding(yg, edgeAll, s.padding as float32);
+		if (typeof s.padding === "string") setPaddingStr(yg, YGEdge.YGEdgeAll, s.padding as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeAll, s.padding as float32);
 	}
 	if (s.paddingHorizontal !== null) {
-		if (typeof s.paddingHorizontal === "string") setPaddingStr(yg, edgeHorizontal, s.paddingHorizontal as string);
-		else YGNodeStyleSetPadding(yg, edgeHorizontal, s.paddingHorizontal as float32);
+		if (typeof s.paddingHorizontal === "string") setPaddingStr(yg, YGEdge.YGEdgeHorizontal, s.paddingHorizontal as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeHorizontal, s.paddingHorizontal as float32);
 	}
 	if (s.paddingVertical !== null) {
-		if (typeof s.paddingVertical === "string") setPaddingStr(yg, edgeVertical, s.paddingVertical as string);
-		else YGNodeStyleSetPadding(yg, edgeVertical, s.paddingVertical as float32);
+		if (typeof s.paddingVertical === "string") setPaddingStr(yg, YGEdge.YGEdgeVertical, s.paddingVertical as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeVertical, s.paddingVertical as float32);
 	}
 	if (s.paddingTop !== null) {
-		if (typeof s.paddingTop === "string") setPaddingStr(yg, edgeTop, s.paddingTop as string);
-		else YGNodeStyleSetPadding(yg, edgeTop, s.paddingTop as float32);
+		if (typeof s.paddingTop === "string") setPaddingStr(yg, YGEdge.YGEdgeTop, s.paddingTop as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeTop, s.paddingTop as float32);
 	}
 	if (s.paddingBottom !== null) {
-		if (typeof s.paddingBottom === "string") setPaddingStr(yg, edgeBottom, s.paddingBottom as string);
-		else YGNodeStyleSetPadding(yg, edgeBottom, s.paddingBottom as float32);
+		if (typeof s.paddingBottom === "string") setPaddingStr(yg, YGEdge.YGEdgeBottom, s.paddingBottom as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeBottom, s.paddingBottom as float32);
 	}
 	if (s.paddingLeft !== null) {
-		if (typeof s.paddingLeft === "string") setPaddingStr(yg, edgeLeft, s.paddingLeft as string);
-		else YGNodeStyleSetPadding(yg, edgeLeft, s.paddingLeft as float32);
+		if (typeof s.paddingLeft === "string") setPaddingStr(yg, YGEdge.YGEdgeLeft, s.paddingLeft as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeLeft, s.paddingLeft as float32);
 	}
 	if (s.paddingRight !== null) {
-		if (typeof s.paddingRight === "string") setPaddingStr(yg, edgeRight, s.paddingRight as string);
-		else YGNodeStyleSetPadding(yg, edgeRight, s.paddingRight as float32);
+		if (typeof s.paddingRight === "string") setPaddingStr(yg, YGEdge.YGEdgeRight, s.paddingRight as string);
+		else YGNodeStyleSetPadding(yg, YGEdge.YGEdgeRight, s.paddingRight as float32);
 	}
 
-	if (s.borderWidth !== null) YGNodeStyleSetBorder(yg, edgeAll, s.borderWidth);
+	if (s.borderWidth !== null) YGNodeStyleSetBorder(yg, YGEdge.YGEdgeAll, s.borderWidth);
 
 	if (s.top !== null) {
-		if (typeof s.top === "string") setPosStr(yg, edgeTop, s.top as string);
-		else YGNodeStyleSetPosition(yg, edgeTop, s.top as float32);
+		if (typeof s.top === "string") setPosStr(yg, YGEdge.YGEdgeTop, s.top as string);
+		else YGNodeStyleSetPosition(yg, YGEdge.YGEdgeTop, s.top as float32);
 	}
 	if (s.left !== null) {
-		if (typeof s.left === "string") setPosStr(yg, edgeLeft, s.left as string);
-		else YGNodeStyleSetPosition(yg, edgeLeft, s.left as float32);
+		if (typeof s.left === "string") setPosStr(yg, YGEdge.YGEdgeLeft, s.left as string);
+		else YGNodeStyleSetPosition(yg, YGEdge.YGEdgeLeft, s.left as float32);
 	}
 	if (s.right !== null) {
-		if (typeof s.right === "string") setPosStr(yg, edgeRight, s.right as string);
-		else YGNodeStyleSetPosition(yg, edgeRight, s.right as float32);
+		if (typeof s.right === "string") setPosStr(yg, YGEdge.YGEdgeRight, s.right as string);
+		else YGNodeStyleSetPosition(yg, YGEdge.YGEdgeRight, s.right as float32);
 	}
 	if (s.bottom !== null) {
-		if (typeof s.bottom === "string") setPosStr(yg, edgeBottom, s.bottom as string);
-		else YGNodeStyleSetPosition(yg, edgeBottom, s.bottom as float32);
+		if (typeof s.bottom === "string") setPosStr(yg, YGEdge.YGEdgeBottom, s.bottom as string);
+		else YGNodeStyleSetPosition(yg, YGEdge.YGEdgeBottom, s.bottom as float32);
 	}
 
 	if (s.gap !== null) {
-		if (typeof s.gap === "string") setGapStr(yg, gutterAll, s.gap as string);
-		else YGNodeStyleSetGap(yg, gutterAll, s.gap as float32);
+		if (typeof s.gap === "string") setGapStr(yg, YGGutter.YGGutterAll, s.gap as string);
+		else YGNodeStyleSetGap(yg, YGGutter.YGGutterAll, s.gap as float32);
 	}
 	if (s.rowGap !== null) {
-		if (typeof s.rowGap === "string") setGapStr(yg, gutterRow, s.rowGap as string);
-		else YGNodeStyleSetGap(yg, gutterRow, s.rowGap as float32);
+		if (typeof s.rowGap === "string") setGapStr(yg, YGGutter.YGGutterRow, s.rowGap as string);
+		else YGNodeStyleSetGap(yg, YGGutter.YGGutterRow, s.rowGap as float32);
 	}
 	if (s.columnGap !== null) {
-		if (typeof s.columnGap === "string") setGapStr(yg, gutterColumn, s.columnGap as string);
-		else YGNodeStyleSetGap(yg, gutterColumn, s.columnGap as float32);
+		if (typeof s.columnGap === "string") setGapStr(yg, YGGutter.YGGutterColumn, s.columnGap as string);
+		else YGNodeStyleSetGap(yg, YGGutter.YGGutterColumn, s.columnGap as float32);
 	}
 }

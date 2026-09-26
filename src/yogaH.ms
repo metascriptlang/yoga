@@ -4,9 +4,9 @@
 //
 // Signatures come from deps/yoga/yoga/*.h via import-from-.h — nothing is
 // hand-transcribed, so the binding cannot drift from the vendored header.
-// YGNodeRef crosses as Ptr<YGNode>; enums cross as int32 (see
-// enums.ms for ordinals); YGValue-returning getters stay unbound (wrappers
-// only need setters + float layout reads).
+// YGNodeRef crosses as Ptr<YGNode> and enums as the header's own enum types;
+// YGValue-returning getters stay unbound (wrappers only need setters + float
+// layout reads).
 //
 // Build convention (matches void): the -I and @link paths resolve relative to
 // this source file, so importers in other repos (void, neon) find them.
@@ -49,7 +49,9 @@ when (windows) {
 }
 
 export {
-	YGNode, YGNodeNew, YGNodeFree, YGNodeFreeRecursive, YGNodeReset, YGNodeIsDirty, YGNodeMarkDirty,
+	YGNode, YGAlign, YGDirection, YGDisplay, YGEdge, YGFlexDirection, YGGutter, YGJustify, YGOverflow,
+	YGPositionType, YGWrap,
+	YGNodeNew, YGNodeFree, YGNodeFreeRecursive, YGNodeReset, YGNodeIsDirty, YGNodeMarkDirty,
 	YGNodeGetHasNewLayout, YGNodeSetHasNewLayout, YGNodeInsertChild, YGNodeSwapChild, YGNodeRemoveChild, YGNodeRemoveAllChildren,
 	YGNodeGetChild, YGNodeGetChildCount, YGNodeGetParent, YGNodeCalculateLayout, YGNodeLayoutGetLeft, YGNodeLayoutGetTop,
 	YGNodeLayoutGetRight, YGNodeLayoutGetBottom, YGNodeLayoutGetWidth, YGNodeLayoutGetHeight, YGNodeLayoutGetHadOverflow, YGNodeLayoutGetMargin,
