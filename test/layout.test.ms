@@ -23,6 +23,8 @@ import {
 	YGNode,
 } from "../src/index";
 import { exit } from "std/process";
+import { yogaCountStart, yogaLiveNodes } from "./yogaCount.h";
+@compile("./yogaCount.cpp", "-std=c++20");
 
 let checks: int32 = 0;
 let failures: int32 = 0;
@@ -34,6 +36,16 @@ function expectEq(label: string, actual: float32, expected: float32): void {
 	if (!ok) {
 		failures += 1;
 		console.log("FAIL " + label + ": expected " + expected.toString() + " got " + actual.toString());
+	}
+}
+
+function expectCount(label: string, actual: int32, expected: int32): void {
+	checks += 1;
+	if (actual !== expected) {
+		failures += 1;
+		console.log(
+			"FAIL " + label + ": expected " + expected.toString() + " got " + actual.toString(),
+		);
 	}
 }
 
@@ -200,6 +212,56 @@ function genericLayoutPassOnHostTree(): void {
 	expectTrue("hostPass freed", root.yg === null && grow.yg === null);
 }
 
+function nullStyleReleasesYogaNode(): void {
+	const leaf = hostBox({ height: 20.0 }, []);
+	const child = hostBox({ height: 50.0 }, [leaf]);
+	const other = hostBox({ height: 30.0 }, []);
+	const root = hostBox({ flexDirection: "column", width: 100.0, height: 200.0 }, [child, other]);
+	const live = yogaLiveNodes();
+	layoutPass(root, 100.0, 200.0);
+	child.flex = null;
+	layoutPass(root, 100.0, 200.0);
+	expectTrue("detach frees child", child.yg === null && leaf.yg === null);
+	expectEq("detach other.top", other.y, 0.0);
+	freeLayoutTree(root);
+	expectCount("detach live yoga nodes", yogaLiveNodes(), live);
+}
+
+function removedChildFreedByHost(): void {
+	const late = hostBox({ height: 50.0 }, [hostBox({ height: 20.0 }, [])]);
+	const early = hostBox({ height: 10.0 }, []);
+	const other = hostBox({ height: 30.0 }, []);
+	const column: FlexStyle = { flexDirection: "column", width: 100.0, height: 200.0 };
+	const root = hostBox(column, [late, early, other]);
+	const live = yogaLiveNodes();
+	layoutPass(root, 100.0, 200.0);
+	root.children = [early, other];
+	layoutPass(root, 100.0, 200.0);
+	freeLayoutTree(late);
+	expectEq("removeAfterPass other.top", other.y, 10.0);
+	root.children = [other];
+	freeLayoutTree(early);
+	layoutPass(root, 100.0, 200.0);
+	expectEq("removeBeforePass other.top", other.y, 0.0);
+	freeLayoutTree(root);
+	expectCount("remove live yoga nodes", yogaLiveNodes(), live);
+}
+
+function restyledChildRejoinsLayout(): void {
+	const child = hostBox({ height: 50.0 }, [hostBox({ height: 20.0 }, [])]);
+	const other = hostBox({ height: 30.0 }, []);
+	const root = hostBox({ flexDirection: "column", width: 100.0, height: 200.0 }, [child, other]);
+	layoutPass(root, 100.0, 200.0);
+	child.flex = null;
+	layoutPass(root, 100.0, 200.0);
+	child.flex = { height: 40.0 };
+	layoutPass(root, 100.0, 200.0);
+	expectEq("rejoin child.height", child.h, 40.0);
+	expectEq("rejoin leaf.height", child.children[0].h, 20.0);
+	expectEq("rejoin other.top", other.y, 40.0);
+	freeLayoutTree(root);
+}
+
 function percentWidthHeight(): void {
 	const root = yogaNode({ flexDirection: "column", width: 400.0, height: 300.0 }, [
 		yogaLeaf({ width: "50%", height: "25%" }),
@@ -274,6 +336,7 @@ function relayoutToPercent(): void {
 }
 
 function main(): void {
+	yogaCountStart();
 	columnFlexGrow();
 	rowJustifyCenter();
 	rowRightToLeft();
@@ -283,6 +346,9 @@ function main(): void {
 	relayoutAfterSetStyle();
 	genericLayoutPassOnYogaNode();
 	genericLayoutPassOnHostTree();
+	nullStyleReleasesYogaNode();
+	restyledChildRejoinsLayout();
+	removedChildFreedByHost();
 	percentWidthHeight();
 	autoMarginCenters();
 	flexBasisPercent();
@@ -290,6 +356,7 @@ function main(): void {
 	numericStringIsPoints();
 	percentEdges();
 	relayoutToPercent();
+	expectCount("live yoga nodes at exit", yogaLiveNodes(), 0);
 	if (failures === 0) {
 		console.log("yoga-layout PASS (" + checks.toString() + " checks)");
 	} else {
