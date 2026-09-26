@@ -82,7 +82,10 @@ function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 	YGNodeRemoveAllChildren(yg);
 	let i: int32 = 0;
 	for (const c of n.layoutGetChildren()) {
-		if (c.layoutGetStyle() === null) continue;
+		if (c.layoutGetStyle() === null) {
+			if (c.layoutGetYg() !== null) { freeLayoutTree(c); }
+			continue;
+		}
 		const cyg = c.layoutGetYg();
 		if (cyg !== null) {
 			YGNodeInsertChild(yg, cyg, i);
