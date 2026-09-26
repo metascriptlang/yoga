@@ -7,6 +7,7 @@ import {
 	yogaLeaf,
 	freeYogaNode,
 	layoutTree,
+	calculateLayout,
 	setStyle,
 	YogaNode,
 	layoutPass,
@@ -65,6 +66,17 @@ function rowJustifyCenter(): void {
 	expectEq("rowCenter a.left", root.children[0].layout.left, 100.0);
 	expectEq("rowCenter b.left", root.children[1].layout.left, 150.0);
 	expectEq("rowCenter a.top", root.children[0].layout.top, 30.0);
+	freeYogaNode(root);
+}
+
+function rowRightToLeft(): void {
+	const root = yogaNode({ flexDirection: "row", width: 300.0, height: 100.0 }, [
+		yogaLeaf({ width: 50.0 }),
+		yogaLeaf({ width: 30.0 }),
+	]);
+	calculateLayout(root, 300.0, 100.0, "rtl");
+	expectEq("rtl a.left", root.children[0].layout.left, 250.0);
+	expectEq("rtl b.left", root.children[1].layout.left, 220.0);
 	freeYogaNode(root);
 }
 
@@ -264,6 +276,7 @@ function relayoutToPercent(): void {
 function main(): void {
 	columnFlexGrow();
 	rowJustifyCenter();
+	rowRightToLeft();
 	paddingAndMargin();
 	absolutePosition();
 	nestedRowInColumn();
