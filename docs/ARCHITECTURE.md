@@ -28,7 +28,7 @@ Ion can provide the outer Xcode context and Neon can provide a host tree, but th
 
 ## Integration modes
 
-A direct consumer uses the package-owned node wrapper and layout entry points exported by `src/index.ms`. A framework or renderer can instead adapt its own node type to the generic pass in `src/sync.ms`.
+A direct consumer uses the package-owned node wrapper and layout entry points exported by `src/index.ms`. A framework or renderer can instead adapt its own node type to the generic pass in `src/sync.ms`. The wrapper is itself a host of that pass, so both modes share one sync, solve, and copy-back path; a second read-back walk for the wrapper would be a second copy of the pass to keep in step.
 
 The generic host protocol is static and cross-module: its host extensions must be exported because the instantiated walker calls them from this package's translation unit. Style snapshots are compared by reference, so a restyle replaces the style object rather than mutating it in place. These constraints preserve direct calls and avoid a runtime adapter or dispatch layer.
 
