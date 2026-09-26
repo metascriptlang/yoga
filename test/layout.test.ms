@@ -343,6 +343,17 @@ function minMaxPercentClamp(): void {
 	freeYogaNode(root);
 }
 
+function minMaxHeightStrings(): void {
+	const root = yogaNode({ flexDirection: "column", width: 100.0, height: 200.0 }, [
+		yogaLeaf({ flexGrow: 1.0, maxHeight: "30" }),
+		yogaLeaf({ height: 10.0, minHeight: "25%" }),
+	]);
+	layoutTree(root, 100.0, 200.0);
+	expectEq("maxHStr a.height", root.children[0].layout.height, 30.0);
+	expectEq("minHPct b.height", root.children[1].layout.height, 50.0);
+	freeYogaNode(root);
+}
+
 function numericStringIsPoints(): void {
 	const root = yogaNode({ flexDirection: "row", width: 300.0, height: 50.0 }, [
 		yogaLeaf({ width: "120" }),
@@ -395,6 +406,7 @@ function main(): void {
 	autoMarginCenters();
 	flexBasisPercent();
 	minMaxPercentClamp();
+	minMaxHeightStrings();
 	numericStringIsPoints();
 	percentEdges();
 	relayoutToPercent();
