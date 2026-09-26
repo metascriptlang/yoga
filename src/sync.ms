@@ -25,7 +25,8 @@
 import { Direction, directionToC } from "./enums";
 import {
 	YGNode, YGNodeNew, YGNodeFreeRecursive, YGNodeCalculateLayout,
-	YGNodeInsertChild, YGNodeRemoveAllChildren, YGNodeGetChild, YGNodeGetChildCount,
+	YGNodeInsertChild, YGNodeRemoveChild, YGNodeRemoveAllChildren, YGNodeGetChild, YGNodeGetChildCount,
+	YGNodeGetParent,
 	YGNodeLayoutGetLeft, YGNodeLayoutGetTop, YGNodeLayoutGetWidth, YGNodeLayoutGetHeight,
 	YGNodeGetHasNewLayout, YGNodeSetHasNewLayout,
 } from "./yogaH";
@@ -45,7 +46,11 @@ export function layoutPass<T>(
 
 export function freeLayoutTree<T>(root: T): void {
 	const yg = root.layoutGetYg();
-	if (yg !== null) { YGNodeFreeRecursive(yg); }
+	if (yg !== null) {
+		const owner = YGNodeGetParent(yg);
+		if (owner !== null) { YGNodeRemoveChild(owner, yg); }
+		YGNodeFreeRecursive(yg);
+	}
 	clearLayoutYg(root);
 }
 
