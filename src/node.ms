@@ -67,7 +67,13 @@ export function layoutGetLastStyle(this n: YogaNode): FlexStyle | null { return 
 export function layoutSetLastStyle(this n: YogaNode, s: FlexStyle | null): void {}
 export function layoutGetYg(this n: YogaNode): Ptr<YGNode> | null { return n.yg; }
 export function layoutSetYg(this n: YogaNode, yg: Ptr<YGNode> | null): void {}
-export function layoutSetFrame(this n: YogaNode, x: float32, y: float32, w: float32, h: float32): void {
+export function layoutSetFrame(
+	this n: YogaNode,
+	x: float32,
+	y: float32,
+	w: float32,
+	h: float32,
+): void {
 	n.layout.left = x;
 	n.layout.top = y;
 	n.layout.width = w;

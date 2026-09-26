@@ -8,25 +8,68 @@
 // ("120") reads as points, mirroring React Native.
 
 import {
-	FlexDirection, Justify, Align, PositionType, Wrap, Overflow, Display, Direction,
-	flexDirectionToC, justifyToC, alignToC, positionTypeToC, wrapToC, overflowToC, displayToC, directionToC,
+	FlexDirection,
+	Justify,
+	Align,
+	PositionType,
+	Wrap,
+	Overflow,
+	Display,
+	Direction,
+	flexDirectionToC,
+	justifyToC,
+	alignToC,
+	positionTypeToC,
+	wrapToC,
+	overflowToC,
+	displayToC,
+	directionToC,
 } from "./enums";
 import {
-	YGNode, YGEdge, YGGutter, YGNodeStyleSetDirection, YGNodeStyleSetFlexDirection, YGNodeStyleSetJustifyContent,
-	YGNodeStyleSetAlignContent, YGNodeStyleSetAlignItems, YGNodeStyleSetAlignSelf,
-	YGNodeStyleSetPositionType, YGNodeStyleSetFlexWrap, YGNodeStyleSetOverflow, YGNodeStyleSetDisplay,
-	YGNodeStyleSetFlex, YGNodeStyleSetFlexGrow, YGNodeStyleSetFlexShrink,
-	YGNodeStyleSetFlexBasis, YGNodeStyleSetFlexBasisPercent, YGNodeStyleSetFlexBasisAuto,
-	YGNodeStyleSetPosition, YGNodeStyleSetPositionPercent,
-	YGNodeStyleSetMargin, YGNodeStyleSetMarginPercent, YGNodeStyleSetMarginAuto,
-	YGNodeStyleSetPadding, YGNodeStyleSetPaddingPercent, YGNodeStyleSetBorder,
-	YGNodeStyleSetWidth, YGNodeStyleSetWidthPercent, YGNodeStyleSetWidthAuto,
-	YGNodeStyleSetHeight, YGNodeStyleSetHeightPercent, YGNodeStyleSetHeightAuto,
-	YGNodeStyleSetMinWidth, YGNodeStyleSetMinWidthPercent,
-	YGNodeStyleSetMinHeight, YGNodeStyleSetMinHeightPercent,
-	YGNodeStyleSetMaxWidth, YGNodeStyleSetMaxWidthPercent,
-	YGNodeStyleSetMaxHeight, YGNodeStyleSetMaxHeightPercent,
-	YGNodeStyleSetAspectRatio, YGNodeStyleSetGap, YGNodeStyleSetGapPercent,
+	YGNode,
+	YGEdge,
+	YGGutter,
+	YGNodeStyleSetDirection,
+	YGNodeStyleSetFlexDirection,
+	YGNodeStyleSetJustifyContent,
+	YGNodeStyleSetAlignContent,
+	YGNodeStyleSetAlignItems,
+	YGNodeStyleSetAlignSelf,
+	YGNodeStyleSetPositionType,
+	YGNodeStyleSetFlexWrap,
+	YGNodeStyleSetOverflow,
+	YGNodeStyleSetDisplay,
+	YGNodeStyleSetFlex,
+	YGNodeStyleSetFlexGrow,
+	YGNodeStyleSetFlexShrink,
+	YGNodeStyleSetFlexBasis,
+	YGNodeStyleSetFlexBasisPercent,
+	YGNodeStyleSetFlexBasisAuto,
+	YGNodeStyleSetPosition,
+	YGNodeStyleSetPositionPercent,
+	YGNodeStyleSetMargin,
+	YGNodeStyleSetMarginPercent,
+	YGNodeStyleSetMarginAuto,
+	YGNodeStyleSetPadding,
+	YGNodeStyleSetPaddingPercent,
+	YGNodeStyleSetBorder,
+	YGNodeStyleSetWidth,
+	YGNodeStyleSetWidthPercent,
+	YGNodeStyleSetWidthAuto,
+	YGNodeStyleSetHeight,
+	YGNodeStyleSetHeightPercent,
+	YGNodeStyleSetHeightAuto,
+	YGNodeStyleSetMinWidth,
+	YGNodeStyleSetMinWidthPercent,
+	YGNodeStyleSetMinHeight,
+	YGNodeStyleSetMinHeightPercent,
+	YGNodeStyleSetMaxWidth,
+	YGNodeStyleSetMaxWidthPercent,
+	YGNodeStyleSetMaxHeight,
+	YGNodeStyleSetMaxHeightPercent,
+	YGNodeStyleSetAspectRatio,
+	YGNodeStyleSetGap,
+	YGNodeStyleSetGapPercent,
 } from "./yogaH";
 
 export interface FlexStyle {
@@ -203,7 +246,9 @@ function setGap(yg: Ptr<YGNode>, gutter: YGGutter, v: float32 | string): void {
 
 export function applyStyle(yg: Ptr<YGNode>, s: FlexStyle): void {
 	if (s.direction !== null) YGNodeStyleSetDirection(yg, directionToC(s.direction));
-	if (s.flexDirection !== null) YGNodeStyleSetFlexDirection(yg, flexDirectionToC(s.flexDirection));
+	if (s.flexDirection !== null) {
+		YGNodeStyleSetFlexDirection(yg, flexDirectionToC(s.flexDirection));
+	}
 	if (s.justifyContent !== null) YGNodeStyleSetJustifyContent(yg, justifyToC(s.justifyContent));
 	if (s.alignContent !== null) YGNodeStyleSetAlignContent(yg, alignToC(s.alignContent));
 	if (s.alignItems !== null) YGNodeStyleSetAlignItems(yg, alignToC(s.alignItems));
@@ -235,7 +280,9 @@ export function applyStyle(yg: Ptr<YGNode>, s: FlexStyle): void {
 	if (s.marginRight !== null) setMargin(yg, YGEdge.YGEdgeRight, s.marginRight);
 
 	if (s.padding !== null) setPadding(yg, YGEdge.YGEdgeAll, s.padding);
-	if (s.paddingHorizontal !== null) setPadding(yg, YGEdge.YGEdgeHorizontal, s.paddingHorizontal);
+	if (s.paddingHorizontal !== null) {
+		setPadding(yg, YGEdge.YGEdgeHorizontal, s.paddingHorizontal);
+	}
 	if (s.paddingVertical !== null) setPadding(yg, YGEdge.YGEdgeVertical, s.paddingVertical);
 	if (s.paddingTop !== null) setPadding(yg, YGEdge.YGEdgeTop, s.paddingTop);
 	if (s.paddingBottom !== null) setPadding(yg, YGEdge.YGEdgeBottom, s.paddingBottom);

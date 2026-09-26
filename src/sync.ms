@@ -24,11 +24,22 @@
 
 import { Direction, directionToC } from "./enums";
 import {
-	YGNode, YGNodeNew, YGNodeFreeRecursive, YGNodeCalculateLayout,
-	YGNodeInsertChild, YGNodeRemoveChild, YGNodeRemoveAllChildren, YGNodeGetChild, YGNodeGetChildCount,
+	YGNode,
+	YGNodeNew,
+	YGNodeFreeRecursive,
+	YGNodeCalculateLayout,
+	YGNodeInsertChild,
+	YGNodeRemoveChild,
+	YGNodeRemoveAllChildren,
+	YGNodeGetChild,
+	YGNodeGetChildCount,
 	YGNodeGetParent,
-	YGNodeLayoutGetLeft, YGNodeLayoutGetTop, YGNodeLayoutGetWidth, YGNodeLayoutGetHeight,
-	YGNodeGetHasNewLayout, YGNodeSetHasNewLayout,
+	YGNodeLayoutGetLeft,
+	YGNodeLayoutGetTop,
+	YGNodeLayoutGetWidth,
+	YGNodeLayoutGetHeight,
+	YGNodeGetHasNewLayout,
+	YGNodeSetHasNewLayout,
 } from "./yogaH";
 import { applyStyle } from "./style";
 

@@ -10,8 +10,10 @@ import {
 } from "./yogaH";
 
 export type FlexDirection = "column" | "column-reverse" | "row" | "row-reverse";
-export type Justify = "flex-start" | "center" | "flex-end" | "space-between" | "space-around" | "space-evenly";
-export type Align = "auto" | "flex-start" | "center" | "flex-end" | "stretch" | "baseline" | "space-between" | "space-around" | "space-evenly";
+export type Justify = "flex-start" | "center" | "flex-end" | "space-between" | "space-around" |
+	"space-evenly";
+export type Align = "auto" | "flex-start" | "center" | "flex-end" | "stretch" | "baseline" |
+	"space-between" | "space-around" | "space-evenly";
 export type PositionType = "static" | "relative" | "absolute";
 export type Wrap = "nowrap" | "wrap" | "wrap-reverse";
 export type Overflow = "visible" | "hidden" | "scroll";
