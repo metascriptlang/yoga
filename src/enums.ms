@@ -1,6 +1,13 @@
-// String-literal unions mirroring YGEnums.h (deps/yoga/yoga/YGEnums.h).
-// Ordinal mapping must match the YG_ENUM_DECL declaration order exactly —
-// these ints cross the C ABI as the corresponding YG* enum values.
+import {
+	YGAlign,
+	YGDirection,
+	YGDisplay,
+	YGFlexDirection,
+	YGJustify,
+	YGOverflow,
+	YGPositionType,
+	YGWrap,
+} from "./yogaH";
 
 export type FlexDirection = "column" | "column-reverse" | "row" | "row-reverse";
 export type Justify = "flex-start" | "center" | "flex-end" | "space-between" | "space-around" | "space-evenly";
@@ -11,92 +18,76 @@ export type Overflow = "visible" | "hidden" | "scroll";
 export type Display = "flex" | "none" | "contents";
 export type Direction = "inherit" | "ltr" | "rtl";
 
-export function flexDirectionToC(v: FlexDirection): int32 {
+export function flexDirectionToC(v: FlexDirection): YGFlexDirection {
 	return match (v) {
-		"column" => 0,
-		"column-reverse" => 1,
-		"row" => 2,
-		"row-reverse" => 3,
+		"column" => YGFlexDirection.YGFlexDirectionColumn,
+		"column-reverse" => YGFlexDirection.YGFlexDirectionColumnReverse,
+		"row" => YGFlexDirection.YGFlexDirectionRow,
+		"row-reverse" => YGFlexDirection.YGFlexDirectionRowReverse,
 	};
 }
 
-export function justifyToC(v: Justify): int32 {
+export function justifyToC(v: Justify): YGJustify {
 	return match (v) {
-		"flex-start" => 0,
-		"center" => 1,
-		"flex-end" => 2,
-		"space-between" => 3,
-		"space-around" => 4,
-		"space-evenly" => 5,
+		"flex-start" => YGJustify.YGJustifyFlexStart,
+		"center" => YGJustify.YGJustifyCenter,
+		"flex-end" => YGJustify.YGJustifyFlexEnd,
+		"space-between" => YGJustify.YGJustifySpaceBetween,
+		"space-around" => YGJustify.YGJustifySpaceAround,
+		"space-evenly" => YGJustify.YGJustifySpaceEvenly,
 	};
 }
 
-export function alignToC(v: Align): int32 {
+export function alignToC(v: Align): YGAlign {
 	return match (v) {
-		"auto" => 0,
-		"flex-start" => 1,
-		"center" => 2,
-		"flex-end" => 3,
-		"stretch" => 4,
-		"baseline" => 5,
-		"space-between" => 6,
-		"space-around" => 7,
-		"space-evenly" => 8,
+		"auto" => YGAlign.YGAlignAuto,
+		"flex-start" => YGAlign.YGAlignFlexStart,
+		"center" => YGAlign.YGAlignCenter,
+		"flex-end" => YGAlign.YGAlignFlexEnd,
+		"stretch" => YGAlign.YGAlignStretch,
+		"baseline" => YGAlign.YGAlignBaseline,
+		"space-between" => YGAlign.YGAlignSpaceBetween,
+		"space-around" => YGAlign.YGAlignSpaceAround,
+		"space-evenly" => YGAlign.YGAlignSpaceEvenly,
 	};
 }
 
-export function positionTypeToC(v: PositionType): int32 {
+export function positionTypeToC(v: PositionType): YGPositionType {
 	return match (v) {
-		"static" => 0,
-		"relative" => 1,
-		"absolute" => 2,
+		"static" => YGPositionType.YGPositionTypeStatic,
+		"relative" => YGPositionType.YGPositionTypeRelative,
+		"absolute" => YGPositionType.YGPositionTypeAbsolute,
 	};
 }
 
-export function wrapToC(v: Wrap): int32 {
+export function wrapToC(v: Wrap): YGWrap {
 	return match (v) {
-		"nowrap" => 0,
-		"wrap" => 1,
-		"wrap-reverse" => 2,
+		"nowrap" => YGWrap.YGWrapNoWrap,
+		"wrap" => YGWrap.YGWrapWrap,
+		"wrap-reverse" => YGWrap.YGWrapWrapReverse,
 	};
 }
 
-export function overflowToC(v: Overflow): int32 {
+export function overflowToC(v: Overflow): YGOverflow {
 	return match (v) {
-		"visible" => 0,
-		"hidden" => 1,
-		"scroll" => 2,
+		"visible" => YGOverflow.YGOverflowVisible,
+		"hidden" => YGOverflow.YGOverflowHidden,
+		"scroll" => YGOverflow.YGOverflowScroll,
 	};
 }
 
-export function displayToC(v: Display): int32 {
+export function displayToC(v: Display): YGDisplay {
 	return match (v) {
-		"flex" => 0,
-		"none" => 1,
-		"contents" => 2,
+		"flex" => YGDisplay.YGDisplayFlex,
+		"none" => YGDisplay.YGDisplayNone,
+		"contents" => YGDisplay.YGDisplayContents,
 	};
 }
 
-export function directionToC(v: Direction): int32 {
+export function directionToC(v: Direction): YGDirection {
 	return match (v) {
-		"inherit" => 0,
-		"ltr" => 1,
-		"rtl" => 2,
+		"inherit" => YGDirection.YGDirectionInherit,
+		"ltr" => YGDirection.YGDirectionLTR,
+		"rtl" => YGDirection.YGDirectionRTL,
 	};
 }
-
-// YGEdge ordinals (internal — edges surface as marginTop/paddingLeft/... fields)
-export const edgeLeft: int32 = 0;
-export const edgeTop: int32 = 1;
-export const edgeRight: int32 = 2;
-export const edgeBottom: int32 = 3;
-export const edgeStart: int32 = 4;
-export const edgeEnd: int32 = 5;
-export const edgeHorizontal: int32 = 6;
-export const edgeVertical: int32 = 7;
-export const edgeAll: int32 = 8;
-
-// YGGutter ordinals (gap)
-export const gutterColumn: int32 = 0;
-export const gutterRow: int32 = 1;
-export const gutterAll: int32 = 2;
