@@ -92,6 +92,46 @@ function rowRightToLeft(): void {
 	freeYogaNode(root);
 }
 
+function reverseRowSpaceBetween(): void {
+	const style: FlexStyle = {
+		flexDirection: "row-reverse",
+		justifyContent: "space-between",
+		alignItems: "flex-end",
+		width: 200.0,
+		height: 100.0,
+	};
+	const root = yogaNode(style, [
+		yogaLeaf({ width: 50.0, height: 30.0 }),
+		yogaLeaf({ width: 50.0, height: 40.0 }),
+	]);
+	layoutTree(root, 200.0, 100.0);
+	expectEq("reverse a.left", root.children[0].layout.left, 150.0);
+	expectEq("reverse b.left", root.children[1].layout.left, 0.0);
+	expectEq("reverse a.top", root.children[0].layout.top, 70.0);
+	freeYogaNode(root);
+}
+
+function wrapSkipsDisplayNone(): void {
+	const style: FlexStyle = {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		alignContent: "flex-start",
+		width: 100.0,
+		height: 100.0,
+	};
+	const root = yogaNode(style, [
+		yogaLeaf({ width: 40.0, height: 20.0 }),
+		yogaLeaf({ width: 40.0, height: 20.0, display: "none" }),
+		yogaLeaf({ width: 40.0, height: 20.0 }),
+		yogaLeaf({ width: 40.0, height: 20.0 }),
+	]);
+	layoutTree(root, 100.0, 100.0);
+	expectEq("wrap c.left", root.children[2].layout.left, 40.0);
+	expectEq("wrap d.left", root.children[3].layout.left, 0.0);
+	expectEq("wrap d.top", root.children[3].layout.top, 20.0);
+	freeYogaNode(root);
+}
+
 function paddingAndMargin(): void {
 	const root = yogaNode({ flexDirection: "column", width: 200.0, height: 200.0, padding: 10.0 }, [
 		yogaLeaf({ flexGrow: 1.0, margin: 5.0 }),
@@ -340,6 +380,8 @@ function main(): void {
 	columnFlexGrow();
 	rowJustifyCenter();
 	rowRightToLeft();
+	reverseRowSpaceBetween();
+	wrapSkipsDisplayNone();
 	paddingAndMargin();
 	absolutePosition();
 	nestedRowInColumn();
