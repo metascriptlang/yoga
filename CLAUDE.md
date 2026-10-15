@@ -8,12 +8,11 @@ Durable package boundaries, integration modes, native dependency ownership, and 
 
 ## Build
 
-Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). iOS and Android consumers compile the package-owned sources declared in `src/yogaH.ms` through ordinary `msc build`; the compiler supplies the active SDK or NDK target, dependency tracking, and native object cache. macOS, Windows, and Emscripten consume prebuilt archives:
+Yoga is **vendored** at `deps/yoga/` (Facebook source, v3.x). iOS, Android and Emscripten consumers compile the package-owned sources declared in `src/yogaH.ms` through ordinary `msc build`; the compiler supplies the active SDK, NDK or emsdk target, dependency tracking, and native object cache. macOS and Windows consume prebuilt archives:
 
 ```bash
 scripts/build-yoga.sh macos      # → deps/yoga/build/macos/libyoga.a
 scripts/build-yoga.sh windows    # → deps/yoga/build/windows/libyoga.a
-scripts/build-yoga.sh emscripten # → deps/yoga/build/emscripten/libyoga.a
 ```
 
 The archive script invokes the C++20 compiler directly without cmake.
@@ -27,7 +26,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 
 ## Known Limitations
 
-- **Backend is C++.** Yoga 3.x requires C++20. On iOS and Android, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS, Windows, and Emscripten use `libyoga.a`. Only the flat C-API is bound to MetaScript.
+- **Backend is C++.** Yoga 3.x requires C++20. On iOS, Android and Emscripten, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS and Windows use `libyoga.a`. Only the flat C-API is bound to MetaScript.
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **Invalid style values fail silently.** `"auto"` on padding, position, gap and min/max is dropped (the `Unit.Auto => {}` arms in `src/style.ms`), and an unparsable dimension string becomes `NaN` through `parseFloat`. Where this should fail loud (compile time for literal styles, run time in `applyStyle`, or both) is an open design question.
 - **Receiver form on `Ptr<YGNode>`.** `CODE-STYLE.md` §5 wants `yg.applyStyle(s)`, but msc does not resolve an extension whose receiver is `Ptr<T>` (card `~/metascript/.inbox/compiler/2026-09-22-method-call-is-not-an-ordinary-call.md`). `applyStyle` and the `set*` helpers in `src/style.ms` stay free functions until it lands.
