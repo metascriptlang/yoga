@@ -22,7 +22,7 @@ when (macos) {
 	@link("../deps/yoga/build/macos/libyoga.a");
 }
 
-when (ios || android) {
+when (ios || android || emcc) {
 	@compile("../deps/yoga/yoga/YGConfig.cpp", "-std=c++20");
 	@compile("../deps/yoga/yoga/YGEnums.cpp", "-std=c++20");
 	@compile("../deps/yoga/yoga/YGNode.cpp", "-std=c++20");
