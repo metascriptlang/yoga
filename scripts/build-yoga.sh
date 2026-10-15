@@ -3,7 +3,6 @@
 #
 # Usage:
 #   scripts/build-yoga.sh macos        # → deps/yoga/build/macos/libyoga.a
-#   scripts/build-yoga.sh emscripten   # → deps/yoga/build/emscripten/libyoga.a
 #   scripts/build-yoga.sh windows      # → deps/yoga/build/windows/libyoga.a
 #
 # Source list is one Yoga tree: deps/yoga/yoga/{*.cpp, */*.cpp}.
@@ -31,11 +30,6 @@ case "$PLATFORM" in
 		CXX="clang++"
 		CXXFLAGS="-std=c++20 -O2 -arch arm64 -arch x86_64 -I$YOGA_SRC"
 		;;
-	emscripten)
-		# Requires emsdk activated upstream.
-		CXX="em++"
-		CXXFLAGS="-std=c++20 -O2 -I$YOGA_SRC"
-		;;
 	windows)
 		# msc links Windows builds with zig cc for x86_64-windows-gnu; match its ABI.
 		# ZIG defaults to the zig that ships with msc.
@@ -43,7 +37,7 @@ case "$PLATFORM" in
 		CXXFLAGS="-target x86_64-windows-gnu -std=c++20 -O2 -I$YOGA_SRC"
 		;;
 	*)
-		echo "unknown platform: $PLATFORM (expected: macos | emscripten | windows)"
+		echo "unknown platform: $PLATFORM (expected: macos | windows)"
 		exit 1
 		;;
 esac
