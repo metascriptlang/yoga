@@ -29,7 +29,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 - **Backend is C++.** Yoga 3.x requires C++20. On iOS, Android, Emscripten and Linux, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS and Windows use `libyoga.a`. Only the flat C-API is bound to MetaScript.
 - **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
 - **Invalid style values fail silently.** `"auto"` on padding, position, gap and min/max is dropped (the `Unit.Auto => {}` arms in `src/style.ms`), and an unparsable dimension string becomes `NaN` through `parseFloat`. Where this should fail loud (compile time for literal styles, run time in `applyStyle`, or both) is an open design question.
-- **Receiver form on `Ptr<YGNode>`.** `CODE-STYLE.md` §5 wants `yg.applyStyle(s)`, but msc does not resolve an extension whose receiver is `Ptr<T>` (card `~/metascript/.inbox/compiler/2026-09-22-method-call-is-not-an-ordinary-call.md`). `applyStyle` and the `set*` helpers in `src/style.ms` stay free functions until it lands.
+- **Receiver form on `Ptr<YGNode>`.** `~/metascript/recompiler/docs/LANG-PREFERENCE.md` §5 wants `yg.applyStyle(s)`, but msc does not resolve an extension whose receiver is `Ptr<T>` (card `~/metascript/.inbox/compiler/2026-09-22-method-call-is-not-an-ordinary-call.md`). `applyStyle` and the `set*` helpers in `src/style.ms` stay free functions until it lands.
 
 ## Git and the gate
 
