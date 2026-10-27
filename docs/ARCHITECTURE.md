@@ -36,7 +36,7 @@ The generic host protocol is static and cross-module: its host extensions must b
 
 The package vendors Yoga under `deps/yoga/`; consumers do not maintain a second source or linker inventory.
 
-The artifact strategy may differ by target without changing the public layout API. iOS, Android and Emscripten compile package-owned C++ sources through the declarations in `src/yogaH.ms`, using the active compiler target and toolchain context. On Android, Yoga links the NDK's static C++ runtime, so the msc-built application library needs no `libc++_shared.so`; `scripts/test-android.sh` is the executable boundary proof. macOS and Windows use archives produced by `scripts/build-yoga.sh`. The current target mapping and source inventory live in those files and are not duplicated here.
+The artifact strategy may differ by target without changing the public layout API. iOS, Android, Emscripten and Linux compile package-owned C++ sources through the declarations in `src/yogaH.ms`, using the active compiler target and toolchain context. On Android, Yoga links the NDK's static C++ runtime, so the msc-built application library needs no `libc++_shared.so`; `scripts/test-android.sh` is the executable boundary proof. macOS and Windows use archives produced by `scripts/build-yoga.sh`. The current target mapping and source inventory live in those files and are not duplicated here.
 
 This boundary gives each fact one owner:
 
