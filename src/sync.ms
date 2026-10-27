@@ -139,3 +139,85 @@ function copyBackLayout<T>(n: T): void {
 		if (c.layoutGetStyle() !== null) copyBackLayout(c);
 	}
 }
+
+// The same pass for a host whose node cannot hand out a child array, because the tree lives in a table and the
+// node is a handle into it. Such a host defines `layoutChildCount(this n: T): int32` and
+// `layoutChildAt(this n: T, i: int32): T` in place of `layoutGetChildren`, so a pass allocates nothing per node.
+export function layoutPassAt<T>(
+	root: T,
+	availableWidth: float32,
+	availableHeight: float32,
+	direction: Direction = "ltr",
+): void {
+	if (root.layoutGetStyle() === null) return;
+	const yg = syncLayoutNodeAt(root);
+	YGNodeCalculateLayout(yg, availableWidth, availableHeight, directionToC(direction));
+	copyBackLayoutAt(root);
+}
+
+export function freeLayoutTreeAt<T>(root: T): void {
+	const yg = root.layoutGetYg();
+	if (yg !== null) {
+		const owner = YGNodeGetParent(yg);
+		if (owner !== null) { YGNodeRemoveChild(owner, yg); }
+		YGNodeFreeRecursive(yg);
+	}
+	clearLayoutYgAt(root);
+}
+
+function clearLayoutYgAt<T>(n: T): void {
+	n.layoutSetYg(null);
+	n.layoutSetLastStyle(null);
+	const count = n.layoutChildCount();
+	for (let k: int32 = 0; k < count; k += 1) { clearLayoutYgAt(n.layoutChildAt(k)); }
+}
+
+function syncLayoutNodeAt<T>(n: T): Ptr<YGNode> {
+	const yg = ensureLayoutYg(n);
+	const style = n.layoutGetStyle();
+	if (style !== null && n.layoutGetLastStyle() !== style) {
+		applyStyle(yg, style);
+		n.layoutSetLastStyle(style);
+	}
+	const count = n.layoutChildCount();
+	let li: int32 = 0;
+	let aligned = true;
+	for (let k: int32 = 0; k < count; k += 1) {
+		const c = n.layoutChildAt(k);
+		if (c.layoutGetStyle() === null) continue;
+		const cyg = syncLayoutNodeAt(c);
+		if (aligned && YGNodeGetChild(yg, li as uint64) !== cyg) { aligned = false; }
+		li += 1;
+	}
+	if (aligned && YGNodeGetChildCount(yg) === li as uint64) return yg;
+	YGNodeRemoveAllChildren(yg);
+	let i: int32 = 0;
+	for (let k: int32 = 0; k < count; k += 1) {
+		const c = n.layoutChildAt(k);
+		if (c.layoutGetStyle() === null) {
+			if (c.layoutGetYg() !== null) { freeLayoutTreeAt(c); }
+			continue;
+		}
+		const cyg = c.layoutGetYg();
+		if (cyg !== null) {
+			YGNodeInsertChild(yg, cyg, i as uint64);
+			i += 1;
+		}
+	}
+	return yg;
+}
+
+function copyBackLayoutAt<T>(n: T): void {
+	const yg = n.layoutGetYg();
+	if (yg === null) return;
+	if (!YGNodeGetHasNewLayout(yg)) return;
+	YGNodeSetHasNewLayout(yg, false);
+	n.layoutSetFrame(
+		YGNodeLayoutGetLeft(yg), YGNodeLayoutGetTop(yg),
+		YGNodeLayoutGetWidth(yg), YGNodeLayoutGetHeight(yg));
+	const count = n.layoutChildCount();
+	for (let k: int32 = 0; k < count; k += 1) {
+		const c = n.layoutChildAt(k);
+		if (c.layoutGetStyle() !== null) copyBackLayoutAt(c);
+	}
+}

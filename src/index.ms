@@ -37,7 +37,7 @@ export {
 } from "./node";
 export { FlexStyle, applyStyle } from "./style";
 export { calculateLayout, getLayout, layoutTree } from "./layout";
-export { layoutPass, freeLayoutTree, markLayoutDirty } from "./sync";
+export { layoutPass, freeLayoutTree, layoutPassAt, freeLayoutTreeAt, markLayoutDirty } from "./sync";
 export { LayoutMeasure, MeasureSize } from "./measure";
 export { YGNode } from "./yogaH";
 export {

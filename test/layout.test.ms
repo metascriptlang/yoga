@@ -9,6 +9,8 @@ import {
 	setStyle,
 	layoutPass,
 	freeLayoutTree,
+	layoutPassAt,
+	freeLayoutTreeAt,
 	layoutGetChildren,
 	layoutGetStyle,
 	layoutGetLastStyle,
@@ -428,5 +430,60 @@ test "relayout to percent" {
 	root.layoutTree(100.0, 200.0);
 	assert near(child.layout.height, 80.0);
 	root.freeYogaNode();
+	assert liveNodes() == live;
+}
+
+export interface TableRow {
+	flex: FlexStyle | null;
+	lastFlex: FlexStyle | null;
+	yg: Ptr<YGNode> | null;
+	kids: int32[];
+	y: float32;
+	h: float32;
+}
+
+export class BoxTable {
+	rows: TableRow[] = [];
+}
+
+export struct BoxRef {
+	table: BoxTable;
+	row: int32;
+}
+
+function tableRow(t: BoxTable, flex: FlexStyle, kids: int32[]): BoxRef {
+	t.rows.push({ flex: flex, lastFlex: null, yg: null, kids: kids, y: 0.0, h: 0.0 });
+	return { table: t, row: (t.rows.length - 1) as int32 };
+}
+
+export function layoutChildCount(this n: BoxRef): int32 { return n.table.rows[n.row].kids.length as int32; }
+export function layoutChildAt(this n: BoxRef, i: int32): BoxRef { return { table: n.table, row: n.table.rows[n.row].kids[i] }; }
+export function layoutGetStyle(this n: BoxRef): FlexStyle | null { return n.table.rows[n.row].flex; }
+export function layoutGetLastStyle(this n: BoxRef): FlexStyle | null { return n.table.rows[n.row].lastFlex; }
+export function layoutSetLastStyle(this n: BoxRef, s: FlexStyle | null): void { n.table.rows[n.row].lastFlex = s; }
+export function layoutGetYg(this n: BoxRef): Ptr<YGNode> | null { return n.table.rows[n.row].yg; }
+export function layoutSetYg(this n: BoxRef, yg: Ptr<YGNode> | null): void { n.table.rows[n.row].yg = yg; }
+export function layoutSetFrame(this n: BoxRef, x: float32, y: float32, w: float32, h: float32): void {
+	const r = n.table.rows[n.row];
+	r.y = y;
+	r.h = h;
+}
+
+test "indexed layout pass on a table-backed tree" {
+	const live = liveNodes();
+	const t = new BoxTable();
+	const grow = tableRow(t, { flexGrow: 1.0 }, []);
+	const leaf = tableRow(t, { height: 20.0 }, []);
+	const fixed = tableRow(t, { height: 50.0 }, [leaf.row]);
+	const root = tableRow(t, { flexDirection: "column", width: 400.0, height: 300.0 }, [grow.row, fixed.row]);
+	layoutPassAt(root, 400.0, 300.0);
+	assert near(t.rows[grow.row].h, 250.0);
+	assert near(t.rows[fixed.row].y, 250.0);
+	t.rows[fixed.row].flex = null;
+	layoutPassAt(root, 400.0, 300.0);
+	assert t.rows[fixed.row].yg === null && t.rows[leaf.row].yg === null;
+	assert near(t.rows[grow.row].h, 300.0);
+	freeLayoutTreeAt(root);
+	assert t.rows[root.row].yg === null && t.rows[grow.row].yg === null;
 	assert liveNodes() == live;
 }
