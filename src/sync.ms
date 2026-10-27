@@ -91,10 +91,10 @@ function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 	for (const c of n.layoutGetChildren()) {
 		if (c.layoutGetStyle() === null) continue;
 		const cyg = syncLayoutNode(c);
-		if (aligned && YGNodeGetChild(yg, li as uint64) !== cyg) { aligned = false; }
+		if (aligned && YGNodeGetChild(yg, li as uint32) !== cyg) { aligned = false; }
 		li += 1;
 	}
-	if (aligned && YGNodeGetChildCount(yg) === li as uint64) return yg;
+	if (aligned && YGNodeGetChildCount(yg) === li as uint32) return yg;
 	YGNodeRemoveAllChildren(yg);
 	let i: int32 = 0;
 	for (const c of n.layoutGetChildren()) {
@@ -104,7 +104,7 @@ function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 		}
 		const cyg = c.layoutGetYg();
 		if (cyg !== null) {
-			YGNodeInsertChild(yg, cyg, i as uint64);
+			YGNodeInsertChild(yg, cyg, i as uint32);
 			i += 1;
 		}
 	}

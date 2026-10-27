@@ -30,7 +30,7 @@ export function yogaNode(style: FlexStyle, children: YogaNode[]): YogaNode {
 	const yg = YGNodeNew();
 	applyStyle(yg, style);
 	for (let i: int32 = 0; i < children.length; i++) {
-		YGNodeInsertChild(yg, children[i].yg, i as uint64);
+		YGNodeInsertChild(yg, children[i].yg, i as uint32);
 	}
 	return {
 		yg: yg,
