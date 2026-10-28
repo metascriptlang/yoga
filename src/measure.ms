@@ -19,7 +19,7 @@ import {
 } from "./yogaH";
 import { yogaBindMeasure } from "./measure.h";
 
-export interface MeasureSize {
+export struct MeasureSize {
 	width: float32;
 	height: float32;
 }
