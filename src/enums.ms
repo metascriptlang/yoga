@@ -4,6 +4,7 @@ import {
 	YGDisplay,
 	YGFlexDirection,
 	YGJustify,
+	YGMeasureMode,
 	YGOverflow,
 	YGPositionType,
 	YGWrap,
@@ -19,6 +20,7 @@ export type Wrap = "nowrap" | "wrap" | "wrap-reverse";
 export type Overflow = "visible" | "hidden" | "scroll";
 export type Display = "flex" | "none" | "contents";
 export type Direction = "inherit" | "ltr" | "rtl";
+export type MeasureMode = "undefined" | "exactly" | "at-most";
 
 export function flexDirectionToC(v: FlexDirection): YGFlexDirection {
 	return match (v) {
@@ -91,5 +93,13 @@ export function directionToC(v: Direction): YGDirection {
 		"inherit" => YGDirection.YGDirectionInherit,
 		"ltr" => YGDirection.YGDirectionLTR,
 		"rtl" => YGDirection.YGDirectionRTL,
+	};
+}
+
+export function measureModeFromC(v: YGMeasureMode): MeasureMode {
+	return match (v) {
+		YGMeasureMode.YGMeasureModeUndefined => "undefined",
+		YGMeasureMode.YGMeasureModeExactly => "exactly",
+		YGMeasureMode.YGMeasureModeAtMost => "at-most",
 	};
 }

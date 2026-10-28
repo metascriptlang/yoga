@@ -6,6 +6,7 @@
 //   - node.ms    — YogaNode wrapper tree around YGNodeRef (+ sync protocol opt-in)
 //   - style.ms   — FlexStyle interface + applyStyle
 //   - layout.ms  — calculateLayout / layoutTree: layoutPass on a YogaNode tree
+//   - measure.ms — LayoutMeasure: a leaf's content size, called by yoga
 //   - sync.ms    — generic layoutPass<T> over any host tree (convention
 //                  protocol: 7 exported `layout*` extensions on T)
 //
@@ -32,10 +33,12 @@ export {
 	layoutGetYg,
 	layoutSetYg,
 	layoutSetFrame,
+	layoutGetMeasure,
 } from "./node";
 export { FlexStyle, applyStyle } from "./style";
 export { calculateLayout, getLayout, layoutTree } from "./layout";
-export { layoutPass, freeLayoutTree } from "./sync";
+export { layoutPass, freeLayoutTree, markLayoutDirty } from "./sync";
+export { LayoutMeasure, MeasureSize } from "./measure";
 export { YGNode } from "./yogaH";
 export {
 	FlexDirection,
@@ -46,4 +49,5 @@ export {
 	Overflow,
 	Display,
 	Direction,
+	MeasureMode,
 } from "./enums";

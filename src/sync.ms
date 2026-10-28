@@ -40,8 +40,11 @@ import {
 	YGNodeLayoutGetHeight,
 	YGNodeGetHasNewLayout,
 	YGNodeSetHasNewLayout,
+	YGNodeHasMeasureFunc,
+	YGNodeMarkDirty,
 } from "./yogaH";
 import { applyStyle } from "./style";
+import { releaseMeasures } from "./measure";
 
 export function layoutPass<T>(
 	root: T,
@@ -60,6 +63,7 @@ export function freeLayoutTree<T>(root: T): void {
 	if (yg !== null) {
 		const owner = YGNodeGetParent(yg);
 		if (owner !== null) { YGNodeRemoveChild(owner, yg); }
+		releaseMeasures(yg);
 		YGNodeFreeRecursive(yg);
 	}
 	clearLayoutYg(root);
@@ -79,6 +83,15 @@ function ensureLayoutYg<T>(n: T): Ptr<YGNode> {
 	return fresh;
 }
 
+export function markLayoutDirty<T>(n: T): void {
+	const yg = n.layoutGetYg();
+	if (yg === null) return;
+	if (!YGNodeHasMeasureFunc(yg)) {
+		throw new Error("yoga: markLayoutDirty on a node without a measure; restyle it instead");
+	}
+	YGNodeMarkDirty(yg);
+}
+
 function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 	const yg = ensureLayoutYg(n);
 	const style = n.layoutGetStyle();
@@ -90,6 +103,9 @@ function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 	let aligned = true;
 	for (const c of n.layoutGetChildren()) {
 		if (c.layoutGetStyle() === null) continue;
+		if (YGNodeHasMeasureFunc(yg)) {
+			throw new Error("yoga: a node with a measure is a leaf; it cannot lay out children");
+		}
 		const cyg = syncLayoutNode(c);
 		if (aligned && YGNodeGetChild(yg, li as uint32) !== cyg) { aligned = false; }
 		li += 1;

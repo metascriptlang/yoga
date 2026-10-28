@@ -11,6 +11,7 @@ import {
 	YGNodeGetChildCount,
 } from "./yogaH";
 import { FlexStyle, applyStyle } from "./style";
+import { LayoutMeasure } from "./measure";
 
 export interface LayoutResult {
 	left: float32;
@@ -67,6 +68,7 @@ export function layoutGetLastStyle(this n: YogaNode): FlexStyle | null { return 
 export function layoutSetLastStyle(this n: YogaNode, s: FlexStyle | null): void {}
 export function layoutGetYg(this n: YogaNode): Ptr<YGNode> | null { return n.yg; }
 export function layoutSetYg(this n: YogaNode, yg: Ptr<YGNode> | null): void {}
+export function layoutGetMeasure(this n: YogaNode): LayoutMeasure | null { return null; }
 export function layoutSetFrame(
 	this n: YogaNode,
 	x: float32,
