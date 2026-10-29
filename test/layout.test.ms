@@ -16,7 +16,12 @@ import {
 	layoutGetYg,
 	layoutSetYg,
 	layoutSetFrame,
+	layoutGetMeasure,
+	markLayoutDirty,
 	FlexStyle,
+	LayoutMeasure,
+	MeasureMode,
+	MeasureSize,
 	YGNode,
 } from "../src/index";
 import { yogaCountStart, yogaLiveNodes } from "./yogaCount.h";
@@ -206,6 +211,7 @@ export interface HostBox {
 	lastFlex: FlexStyle | null;
 	yg: Ptr<YGNode> | null;
 	children: HostBox[];
+	measure: LayoutMeasure | null;
 	x: float32;
 	y: float32;
 	w: float32;
@@ -218,6 +224,7 @@ export function layoutGetLastStyle(this n: HostBox): FlexStyle | null { return n
 export function layoutSetLastStyle(this n: HostBox, s: FlexStyle | null): void { n.lastFlex = s; }
 export function layoutGetYg(this n: HostBox): Ptr<YGNode> | null { return n.yg; }
 export function layoutSetYg(this n: HostBox, yg: Ptr<YGNode> | null): void { n.yg = yg; }
+export function layoutGetMeasure(this n: HostBox): LayoutMeasure | null { return n.measure; }
 export function layoutSetFrame(
 	this n: HostBox,
 	x: float32,
@@ -237,6 +244,7 @@ function hostBox(flex: FlexStyle, children: HostBox[]): HostBox {
 		lastFlex: null,
 		yg: null,
 		children: children,
+		measure: null,
 		x: 0.0,
 		y: 0.0,
 		w: 0.0,
@@ -428,5 +436,119 @@ test "relayout to percent" {
 	root.layoutTree(100.0, 200.0);
 	assert near(child.layout.height, 80.0);
 	root.freeYogaNode();
+	assert liveNodes() == live;
+}
+
+class TextProbe {
+	width: float32 = 120.0;
+	height: float32 = 18.0;
+	calls: int32 = 0;
+	widthMode: MeasureMode = "undefined";
+	heightMode: MeasureMode = "undefined";
+	maxWidth: float32 = 0.0;
+}
+
+let textProbesDestroyed: int32 = 0;
+function onDestroy(this p: TextProbe): void { textProbesDestroyed += 1; }
+
+function textLeaf(probe: TextProbe): HostBox {
+	const leaf = hostBox({}, []);
+	leaf.measure = (w: float32, wm: MeasureMode, h: float32, hm: MeasureMode): MeasureSize => {
+		probe.calls += 1;
+		probe.widthMode = wm;
+		probe.heightMode = hm;
+		probe.maxWidth = w;
+		const width = wm === "undefined" || probe.width < w ? probe.width : w;
+		return { width: width, height: probe.height };
+	};
+	return leaf;
+}
+
+test "measured leaf takes its content height" {
+	const live = liveNodes();
+	const probe = new TextProbe();
+	const text = textLeaf(probe);
+	const root = hostBox({ flexDirection: "column", width: 200.0 }, [text]);
+	layoutPass(root, 200.0, NaN as float32);
+	assert probe.widthMode === "exactly" && probe.heightMode === "undefined";
+	assert near(probe.maxWidth, 200.0);
+	assert near(text.w, 200.0) && near(text.h, 18.0);
+	assert near(root.h, 18.0);
+	freeLayoutTree(root);
+	assert liveNodes() == live;
+}
+
+test "measured leaf shrinks to its content under at-most" {
+	const live = liveNodes();
+	const probe = new TextProbe();
+	const text = textLeaf(probe);
+	const root = hostBox({ flexDirection: "row", alignItems: "flex-start", width: 200.0, height: 100.0 }, [text]);
+	layoutPass(root, 200.0, 100.0);
+	assert probe.widthMode === "at-most";
+	assert near(text.w, 120.0) && near(text.h, 18.0);
+	probe.width = 500.0;
+	markLayoutDirty(text);
+	layoutPass(root, 200.0, 100.0);
+	assert near(text.w, 200.0);
+	freeLayoutTree(root);
+	assert liveNodes() == live;
+}
+
+test "measure runs again only after markLayoutDirty" {
+	const live = liveNodes();
+	const probe = new TextProbe();
+	const text = textLeaf(probe);
+	const root = hostBox({ flexDirection: "column", width: 200.0 }, [text]);
+	layoutPass(root, 200.0, NaN as float32);
+	const first = probe.calls;
+	assert first > 0;
+	layoutPass(root, 200.0, NaN as float32);
+	assert probe.calls == first;
+	probe.height = 36.0;
+	markLayoutDirty(text);
+	layoutPass(root, 200.0, NaN as float32);
+	assert probe.calls > first;
+	assert near(text.h, 36.0) && near(root.h, 36.0);
+	freeLayoutTree(root);
+	assert liveNodes() == live;
+}
+
+function layOutAndFreeText(): void {
+	const text = textLeaf(new TextProbe());
+	const root = hostBox({ flexDirection: "column", width: 200.0 }, [text]);
+	layoutPass(root, 200.0, NaN as float32);
+	freeLayoutTree(root);
+}
+
+test "measure closure released with its yoga node" {
+	const live = liveNodes();
+	const before = textProbesDestroyed;
+	layOutAndFreeText();
+	assert textProbesDestroyed == before + 1;
+	assert liveNodes() == live;
+}
+
+test "measured node with laid-out children refused" {
+	const live = liveNodes();
+	const text = textLeaf(new TextProbe());
+	text.children = [hostBox({ height: 10.0 }, [])];
+	const root = hostBox({ flexDirection: "column", width: 200.0 }, [text]);
+	let message = "";
+	try { layoutPass(root, 200.0, NaN as float32); } catch (e) { message = (e as Error).message; }
+	assert message.includes("measure is a leaf");
+	freeLayoutTree(text);
+	freeLayoutTree(root);
+	assert liveNodes() == live;
+}
+
+test "markLayoutDirty refuses a node without a measure" {
+	const live = liveNodes();
+	const box = hostBox({ height: 10.0 }, []);
+	const root = hostBox({ flexDirection: "column", width: 200.0 }, [box]);
+	layoutPass(root, 200.0, NaN as float32);
+	let threw = false;
+	try { markLayoutDirty(box); } catch (e) { threw = true; }
+	assert threw;
+	freeLayoutTree(root);
 	assert liveNodes() == live;
 }
