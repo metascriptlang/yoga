@@ -27,7 +27,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 ## Known Limitations
 
 - **Backend is C++.** Yoga 3.x requires C++20. On iOS, Android, Emscripten and Linux, msc compiles the package-owned sources declared in `src/yogaH.ms`; macOS and Windows use `libyoga.a`. Only the flat C-API is bound to MetaScript.
-- **No measure callbacks yet.** `YGMeasureFunc` (for intrinsic-size text) needs a C-bridge for MetaScript callbacks. Planned.
+- **The measure hook goes through C.** msc cannot yet pass a MetaScript routine where a C header expects a function pointer (card `~/metascript/.inbox/compiler/2026-10-16-function-into-c-function-pointer-emits-msclosure.md`), so `src/measure.c` holds the `YGMeasureFunc` and calls the `@exportName` routine in `src/measure.ms`. When that card lands, the routine passes to `YGNodeSetMeasureFunc` directly and `measure.c`/`measure.h` go; hosts see no change.
 - **Invalid style values fail silently.** `"auto"` on padding, position, gap and min/max is dropped (the `Unit.Auto => {}` arms in `src/style.ms`), and an unparsable dimension string becomes `NaN` through `parseFloat`. Where this should fail loud (compile time for literal styles, run time in `applyStyle`, or both) is an open design question.
 - **Receiver form on `Ptr<YGNode>`.** `~/metascript/recompiler/docs/LANG-PREFERENCE.md` §5 wants `yg.applyStyle(s)`, but msc does not resolve an extension whose receiver is `Ptr<T>` (card `~/metascript/.inbox/compiler/2026-09-22-method-call-is-not-an-ordinary-call.md`). `applyStyle` and the `set*` helpers in `src/style.ms` stay free functions until it lands.
 
@@ -35,7 +35,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 
 Yoga follows the worktree playbook enabled by `~/metascript/CLAUDE.md` and uses `~/nerdtools/claude/tools/wt.sh` with the gate below. The shared session context reads this repo's card and `~/metascript/.inbox/yoga/`. A MetaScript or runtime limitation follows the workspace compiler boundary: repro, card in `~/metascript/.inbox/compiler/`, park, move on.
 
-The gate is `sh scripts/test.sh` (`msc test test/layout.test.ms`), read by its exit code (green 2026-10-27 on `msc` `c85d84fb8`: the file's 23 tests pass). Every test also asserts that no Yoga node outlives it, counted from Yoga's own allocation events by `test/yogaCount.cpp`. A change to `src/sync.ms` or to the seven layout extensions also runs void's consumer of the pass: `msc test src/test/layoutCheck.ms` in `~/metascript/void` (green 2026-10-27 on `msc` `c85d84fb8`, Void `83817381`: its 10 tests pass, 340 with the std files it pulls in).
+The gate is `sh scripts/test.sh` (`msc test test/layout.test.ms`), read by its exit code (green 2026-10-29 on `msc` `df4c2416a`: the file's 29 tests pass). Every test also asserts that no Yoga node outlives it, counted from Yoga's own allocation events by `test/yogaCount.cpp`. A change to `src/sync.ms` or to the eight layout extensions also runs void's consumer of the pass: `msc test src/test/layoutCheck.ms` in `~/metascript/void` (green 2026-10-27 on `msc` `c85d84fb8`, Void `83817381`: its 10 tests pass, 340 with the std files it pulls in).
 
 ## References
 
