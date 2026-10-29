@@ -8,7 +8,7 @@
 //   - layout.ms  — calculateLayout / layoutTree: layoutPass on a YogaNode tree
 //   - measure.ms — LayoutMeasure: a leaf's content size, called by yoga
 //   - sync.ms    — generic layoutPass<T> over any host tree (convention
-//                  protocol: 7 exported `layout*` extensions on T)
+//                  protocol: 8 exported `layout*` extensions on T)
 //
 // Consumers (Neon reconciler, Void-standalone) call:
 //   const root = yogaNode({flexDirection: "column", padding: 10.0}, [

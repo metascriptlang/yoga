@@ -1,7 +1,7 @@
 // Generic layout pass over any host node tree — the cross-module convention
 // protocol from recompiler docs/PROTOCOLS.md Part II (Nim mixin semantics).
 //
-// A host opts in by defining SEVEN exported extensions on its node type T:
+// A host opts in by defining EIGHT exported extensions on its node type T:
 //
 //   export function layoutGetChildren(this n: T): T[]
 //   export function layoutGetStyle(this n: T): FlexStyle | null
@@ -10,6 +10,7 @@
 //   export function layoutGetYg(this n: T): Ptr<YGNode> | null
 //   export function layoutSetYg(this n: T, yg: Ptr<YGNode> | null): void
 //   export function layoutSetFrame(this n: T, x: float32, y: float32, w: float32, h: float32): void
+//   export function layoutGetMeasure(this n: T): LayoutMeasure | null
 //
 // `export` is required: the monomorphized pass is emitted in THIS module's TU
 // and calls the extensions cross-TU. A node whose layoutGetStyle() is null
@@ -17,6 +18,11 @@
 // compared by REFERENCE — restyle by assigning a fresh FlexStyle, never by
 // mutating the old one. Copy-back is gated on hasNewLayout, so a stable
 // subtree costs one flag check per frame.
+//
+// layoutGetMeasure is read once, when the pass creates the node's yoga node
+// (RN binds by node trait at creation, YogaLayoutableShadowNode.cpp:74-80).
+// A measured node is a leaf; when its content changes the host calls
+// markLayoutDirty, and yoga keeps the last measure until then.
 //
 // Known gap (same as before the DRY refactor): reparenting a laid-out node
 // between two islands within one frame can trip yoga's single-owner assert —
@@ -44,7 +50,7 @@ import {
 	YGNodeMarkDirty,
 } from "./yogaH";
 import { applyStyle } from "./style";
-import { releaseMeasures } from "./measure";
+import { bindMeasure, releaseMeasures } from "./measure";
 
 export function layoutPass<T>(
 	root: T,
@@ -79,6 +85,8 @@ function ensureLayoutYg<T>(n: T): Ptr<YGNode> {
 	const cur = n.layoutGetYg();
 	if (cur !== null) return cur;
 	const fresh = YGNodeNew();
+	const measure = n.layoutGetMeasure();
+	if (measure !== null) { bindMeasure(fresh, measure); }
 	n.layoutSetYg(fresh);
 	return fresh;
 }
