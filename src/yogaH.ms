@@ -50,6 +50,7 @@ when (windows) {
 
 export {
 	YGNode,
+	YGConfig,
 	YGAlign,
 	YGDirection,
 	YGDisplay,
@@ -140,5 +141,6 @@ export {
 	YGConfigSetUseWebDefaults,
 	YGNodeNewWithConfig,
 	YGNodeSetConfig,
+	YGNodeGetConfig,
 	YGFloatIsUndefined,
 } from "../deps/yoga/yoga/Yoga.h";

@@ -25,7 +25,12 @@
 import { Direction, directionToC } from "./enums";
 import {
 	YGNode,
-	YGNodeNew,
+	YGConfig,
+	YGConfigNew,
+	YGConfigSetPointScaleFactor,
+	YGNodeNewWithConfig,
+	YGNodeGetConfig,
+	YGNodeSetConfig,
 	YGNodeFreeRecursive,
 	YGNodeCalculateLayout,
 	YGNodeInsertChild,
@@ -51,9 +56,10 @@ export function layoutPass<T>(
 	availableWidth: float32,
 	availableHeight: float32,
 	direction: Direction = "ltr",
+	pointScale: float32 = 1.0,
 ): void {
 	if (root.layoutGetStyle() === null) return;
-	const yg = syncLayoutNode(root);
+	const yg = syncLayoutNode(root, configFor(pointScale));
 	YGNodeCalculateLayout(yg, availableWidth, availableHeight, directionToC(direction));
 	copyBackLayout(root);
 }
@@ -75,12 +81,15 @@ function clearLayoutYg<T>(n: T): void {
 	for (const c of n.layoutGetChildren()) { clearLayoutYg(c); }
 }
 
-function ensureLayoutYg<T>(n: T): Ptr<YGNode> {
-	const cur = n.layoutGetYg();
-	if (cur !== null) return cur;
-	const fresh = YGNodeNew();
-	n.layoutSetYg(fresh);
-	return fresh;
+const scaledConfigs = new Map<float32, Ptr<YGConfig>>();
+
+function configFor(pointScale: float32): Ptr<YGConfig> {
+	const known = scaledConfigs.get(pointScale);
+	if (known !== undefined) return known;
+	const made = YGConfigNew();
+	YGConfigSetPointScaleFactor(made, pointScale);
+	scaledConfigs.set(pointScale, made);
+	return made;
 }
 
 export function markLayoutDirty<T>(n: T): void {
@@ -92,8 +101,19 @@ export function markLayoutDirty<T>(n: T): void {
 	YGNodeMarkDirty(yg);
 }
 
-function syncLayoutNode<T>(n: T): Ptr<YGNode> {
-	const yg = ensureLayoutYg(n);
+function ensureLayoutYg<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
+	const cur = n.layoutGetYg();
+	if (cur === null) {
+		const fresh = YGNodeNewWithConfig(config);
+		n.layoutSetYg(fresh);
+		return fresh;
+	}
+	if (YGNodeGetConfig(cur) !== config) YGNodeSetConfig(cur, config);
+	return cur;
+}
+
+function syncLayoutNode<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
+	const yg = ensureLayoutYg(n, config);
 	const style = n.layoutGetStyle();
 	if (style !== null && n.layoutGetLastStyle() !== style) {
 		applyStyle(yg, style);
@@ -106,7 +126,7 @@ function syncLayoutNode<T>(n: T): Ptr<YGNode> {
 		if (YGNodeHasMeasureFunc(yg)) {
 			throw new Error("yoga: a node with a measure is a leaf; it cannot lay out children");
 		}
-		const cyg = syncLayoutNode(c);
+		const cyg = syncLayoutNode(c, config);
 		if (aligned && YGNodeGetChild(yg, li as uint32) !== cyg) { aligned = false; }
 		li += 1;
 	}
@@ -148,9 +168,10 @@ export function layoutPassAt<T>(
 	availableWidth: float32,
 	availableHeight: float32,
 	direction: Direction = "ltr",
+	pointScale: float32 = 1.0,
 ): void {
 	if (root.layoutGetStyle() === null) return;
-	const yg = syncLayoutNodeAt(root);
+	const yg = syncLayoutNodeAt(root, configFor(pointScale));
 	YGNodeCalculateLayout(yg, availableWidth, availableHeight, directionToC(direction));
 	copyBackLayoutAt(root);
 }
@@ -172,8 +193,8 @@ function clearLayoutYgAt<T>(n: T): void {
 	for (let k: int32 = 0; k < count; k += 1) { clearLayoutYgAt(n.layoutChildAt(k)); }
 }
 
-function syncLayoutNodeAt<T>(n: T): Ptr<YGNode> {
-	const yg = ensureLayoutYg(n);
+function syncLayoutNodeAt<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
+	const yg = ensureLayoutYg(n, config);
 	const style = n.layoutGetStyle();
 	if (style !== null && n.layoutGetLastStyle() !== style) {
 		applyStyle(yg, style);
@@ -185,7 +206,7 @@ function syncLayoutNodeAt<T>(n: T): Ptr<YGNode> {
 	for (let k: int32 = 0; k < count; k += 1) {
 		const c = n.layoutChildAt(k);
 		if (c.layoutGetStyle() === null) continue;
-		const cyg = syncLayoutNodeAt(c);
+		const cyg = syncLayoutNodeAt(c, config);
 		if (aligned && YGNodeGetChild(yg, li as uint64) !== cyg) { aligned = false; }
 		li += 1;
 	}
