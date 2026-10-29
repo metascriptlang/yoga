@@ -487,3 +487,34 @@ test "indexed layout pass on a table-backed tree" {
 	assert t.rows[root.row].yg === null && t.rows[grow.row].yg === null;
 	assert liveNodes() == live;
 }
+
+test "point scale rounds to device pixels and follows a scale change" {
+	const live = liveNodes();
+	const root = yogaNode({ flexDirection: "column", width: 100.0 }, [
+		yogaLeaf({ height: 17.5 }), yogaLeaf({ height: 17.5 }), yogaLeaf({ height: 17.5 }), yogaLeaf({ height: 17.5 }),
+	]);
+	layoutPass(root, 100.0, 1000.0, "ltr", 2.0);
+	assert near(root.children[1].layout.top, 17.5) && near(root.children[3].layout.top, 52.5);
+	layoutPass(root, 100.0, 1000.0, "ltr", 1.0);
+	assert near(root.children[1].layout.top, 18.0) && near(root.children[3].layout.top, 53.0);
+	layoutPass(root, 100.0, 1000.0, "ltr", 2.0);
+	assert near(root.children[1].layout.top, 17.5) && near(root.children[3].layout.top, 52.5);
+	root.freeYogaNode();
+	assert liveNodes() == live;
+}
+
+test "indexed layout pass takes the point scale" {
+	const live = liveNodes();
+	const t = new BoxTable();
+	const a = tableRow(t, { height: 17.5 }, []);
+	const b = tableRow(t, { height: 17.5 }, []);
+	const c = tableRow(t, { height: 17.5 }, []);
+	const d = tableRow(t, { height: 17.5 }, []);
+	const root = tableRow(t, { flexDirection: "column", width: 100.0 }, [a.row, b.row, c.row, d.row]);
+	layoutPassAt(root, 100.0, 1000.0, "ltr", 2.0);
+	assert near(t.rows[b.row].y, 17.5) && near(t.rows[d.row].y, 52.5);
+	layoutPassAt(root, 100.0, 1000.0, "ltr", 1.0);
+	assert near(t.rows[b.row].y, 18.0) && near(t.rows[d.row].y, 53.0);
+	freeLayoutTreeAt(root);
+	assert liveNodes() == live;
+}
