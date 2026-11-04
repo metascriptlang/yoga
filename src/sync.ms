@@ -219,10 +219,10 @@ function syncLayoutNodeAt<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
 			throw new Error("yoga: a node with a measure is a leaf; it cannot lay out children");
 		}
 		const cyg = syncLayoutNodeAt(c, config);
-		if (aligned && YGNodeGetChild(yg, li as uint64) !== cyg) { aligned = false; }
+		if (aligned && YGNodeGetChild(yg, li as uint32) !== cyg) { aligned = false; }
 		li += 1;
 	}
-	if (aligned && YGNodeGetChildCount(yg) === li as uint64) return yg;
+	if (aligned && YGNodeGetChildCount(yg) === li as uint32) return yg;
 	YGNodeRemoveAllChildren(yg);
 	let i: int32 = 0;
 	for (let k: int32 = 0; k < count; k += 1) {
@@ -233,7 +233,7 @@ function syncLayoutNodeAt<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
 		}
 		const cyg = c.layoutGetYg();
 		if (cyg !== null) {
-			YGNodeInsertChild(yg, cyg, i as uint64);
+			YGNodeInsertChild(yg, cyg, i as uint32);
 			i += 1;
 		}
 	}
