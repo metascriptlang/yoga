@@ -446,6 +446,7 @@ export interface TableRow {
 	lastFlex: FlexStyle | null;
 	yg: Ptr<YGNode> | null;
 	kids: int32[];
+	measure: LayoutMeasure | null;
 	y: float32;
 	h: float32;
 }
@@ -460,7 +461,7 @@ export struct BoxRef {
 }
 
 function tableRow(t: BoxTable, flex: FlexStyle, kids: int32[]): BoxRef {
-	t.rows.push({ flex: flex, lastFlex: null, yg: null, kids: kids, y: 0.0, h: 0.0 });
+	t.rows.push({ flex: flex, lastFlex: null, yg: null, kids: kids, measure: null, y: 0.0, h: 0.0 });
 	return { table: t, row: (t.rows.length - 1) as int32 };
 }
 
@@ -471,6 +472,7 @@ export function layoutGetLastStyle(this n: BoxRef): FlexStyle | null { return n.
 export function layoutSetLastStyle(this n: BoxRef, s: FlexStyle | null): void { n.table.rows[n.row].lastFlex = s; }
 export function layoutGetYg(this n: BoxRef): Ptr<YGNode> | null { return n.table.rows[n.row].yg; }
 export function layoutSetYg(this n: BoxRef, yg: Ptr<YGNode> | null): void { n.table.rows[n.row].yg = yg; }
+export function layoutGetMeasure(this n: BoxRef): LayoutMeasure | null { return n.table.rows[n.row].measure; }
 export function layoutSetFrame(this n: BoxRef, x: float32, y: float32, w: float32, h: float32): void {
 	const r = n.table.rows[n.row];
 	r.y = y;
@@ -539,9 +541,8 @@ class TextProbe {
 let textProbesDestroyed: int32 = 0;
 function onDestroy(this p: TextProbe): void { textProbesDestroyed += 1; }
 
-function textLeaf(probe: TextProbe): HostBox {
-	const leaf = hostBox({}, []);
-	leaf.measure = (w: float32, wm: MeasureMode, h: float32, hm: MeasureMode): MeasureSize => {
+function probeMeasure(probe: TextProbe): LayoutMeasure {
+	return (w: float32, wm: MeasureMode, h: float32, hm: MeasureMode): MeasureSize => {
 		probe.calls += 1;
 		probe.widthMode = wm;
 		probe.heightMode = hm;
@@ -549,7 +550,18 @@ function textLeaf(probe: TextProbe): HostBox {
 		const width = wm === "undefined" || probe.width < w ? probe.width : w;
 		return { width: width, height: probe.height };
 	};
+}
+
+function textLeaf(probe: TextProbe): HostBox {
+	const leaf = hostBox({}, []);
+	leaf.measure = probeMeasure(probe);
 	return leaf;
+}
+
+function textRow(t: BoxTable, probe: TextProbe, kids: int32[]): BoxRef {
+	const row = tableRow(t, {}, kids);
+	t.rows[row.row].measure = probeMeasure(probe);
+	return row;
 }
 
 test "measured leaf takes its content height" {
@@ -638,5 +650,54 @@ test "markLayoutDirty refuses a node without a measure" {
 	try { markLayoutDirty(box); } catch (e) { threw = true; }
 	assert threw;
 	freeLayoutTree(root);
+	assert liveNodes() == live;
+}
+
+test "indexed pass measures a table leaf and re-measures after markLayoutDirty" {
+	const live = liveNodes();
+	const t = new BoxTable();
+	const probe = new TextProbe();
+	const text = textRow(t, probe, []);
+	const root = tableRow(t, { flexDirection: "column", width: 200.0 }, [text.row]);
+	layoutPassAt(root, 200.0, NaN as float32);
+	assert probe.widthMode === "exactly" && near(t.rows[text.row].h, 18.0);
+	const first = probe.calls;
+	layoutPassAt(root, 200.0, NaN as float32);
+	assert probe.calls == first;
+	probe.height = 36.0;
+	markLayoutDirty(text);
+	layoutPassAt(root, 200.0, NaN as float32);
+	assert probe.calls > first && near(t.rows[text.row].h, 36.0);
+	freeLayoutTreeAt(root);
+	assert liveNodes() == live;
+}
+
+function layOutAndFreeTextRow(): void {
+	const t = new BoxTable();
+	const text = textRow(t, new TextProbe(), []);
+	const root = tableRow(t, { flexDirection: "column", width: 200.0 }, [text.row]);
+	layoutPassAt(root, 200.0, NaN as float32);
+	freeLayoutTreeAt(root);
+}
+
+test "indexed pass releases a measure closure with its yoga node" {
+	const live = liveNodes();
+	const before = textProbesDestroyed;
+	layOutAndFreeTextRow();
+	assert textProbesDestroyed == before + 1;
+	assert liveNodes() == live;
+}
+
+test "indexed pass refuses a measured row with laid-out children" {
+	const live = liveNodes();
+	const t = new BoxTable();
+	const kid = tableRow(t, { height: 10.0 }, []);
+	const text = textRow(t, new TextProbe(), [kid.row]);
+	const root = tableRow(t, { flexDirection: "column", width: 200.0 }, [text.row]);
+	let message = "";
+	try { layoutPassAt(root, 200.0, NaN as float32); } catch (e) { message = (e as Error).message; }
+	assert message.includes("measure is a leaf");
+	freeLayoutTreeAt(text);
+	freeLayoutTreeAt(root);
 	assert liveNodes() == live;
 }
