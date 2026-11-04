@@ -35,7 +35,7 @@ The archive script invokes the C++20 compiler directly without cmake.
 
 Yoga follows the worktree playbook enabled by `~/metascript/CLAUDE.md` and uses `~/nerdtools/claude/tools/wt.sh` with the gate below. The shared session context reads this repo's card and `~/metascript/.inbox/yoga/`. A MetaScript or runtime limitation follows the workspace compiler boundary: repro, card in `~/metascript/.inbox/compiler/`, park, move on.
 
-The gate is `sh scripts/test.sh` (`msc test test/layout.test.ms`), read by its exit code (green 2026-10-29 on `msc` `df4c2416a`: the file's 29 tests pass). Every test also asserts that no Yoga node outlives it, counted from Yoga's own allocation events by `test/yogaCount.cpp`. A change to `src/sync.ms` or to the eight layout extensions also runs void's consumer of the pass: `msc test src/test/layoutCheck.ms` in `~/metascript/void` (green 2026-10-27 on `msc` `c85d84fb8`, Void `83817381`: its 10 tests pass, 340 with the std files it pulls in).
+The gate is `sh scripts/test.sh` (`msc test test/layout.test.ms`), read by its exit code (green 2026-11-04 on `msc` `11068f8d900`: the file's 35 tests pass). Every test also asserts that no Yoga node outlives it, counted from Yoga's own allocation events by `test/yogaCount.cpp`. A change to `src/sync.ms` or to the eight layout extensions also runs void's consumer of the pass: `msc test src/test/layoutCheck.ms` in `~/metascript/void` (green 2026-11-04 on `msc` `11068f8d900`, Void `8ca0b3e8`: its 11 tests pass, 444 with the std files it pulls in).
 
 ## References
 
