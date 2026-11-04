@@ -189,6 +189,7 @@ export function freeLayoutTreeAt<T>(root: T): void {
 	if (yg !== null) {
 		const owner = YGNodeGetParent(yg);
 		if (owner !== null) { YGNodeRemoveChild(owner, yg); }
+		releaseMeasures(yg);
 		YGNodeFreeRecursive(yg);
 	}
 	clearLayoutYgAt(root);
@@ -214,6 +215,9 @@ function syncLayoutNodeAt<T>(n: T, config: Ptr<YGConfig>): Ptr<YGNode> {
 	for (let k: int32 = 0; k < count; k += 1) {
 		const c = n.layoutChildAt(k);
 		if (c.layoutGetStyle() === null) continue;
+		if (YGNodeHasMeasureFunc(yg)) {
+			throw new Error("yoga: a node with a measure is a leaf; it cannot lay out children");
+		}
 		const cyg = syncLayoutNodeAt(c, config);
 		if (aligned && YGNodeGetChild(yg, li as uint64) !== cyg) { aligned = false; }
 		li += 1;
